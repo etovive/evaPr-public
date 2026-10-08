@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   viewBox="0 0 62 62"
+   id="svg8"
+   sodipodi:docname="motor-1p-dosi.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   width="62"
+   height="62"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <title
+     id="title1">Dosificadora</title>
+  <defs
+     id="defs8" />
+  <sodipodi:namedview
+     id="namedview8"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="false"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="8.0000004"
+     inkscape:cx="24.374999"
+     inkscape:cy="26.937499"
+     inkscape:window-width="1600"
+     inkscape:window-height="831"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg8"
+     showborder="false"
+     borderlayer="true"
+     showgrid="false"
+     showguides="true">
+    <inkscape:grid
+       id="grid1"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="1"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="5"
+       enabled="true"
+       visible="false" />
+  </sodipodi:namedview>
+  <ellipse
+     cx="35.007919"
+     cy="35.600098"
+     fill="none"
+     stroke="#550022"
+     id="circle1"
+     rx="16.848007"
+     ry="16.848009"
+     style="stroke-width:1.40399" />
+  <path
+     d="m 25.163399,43.521507 v 3.954201 h 0.675669 v -5.551237 h -0.445327 c -0.23802,0.852264 -0.391581,0.967435 -1.435797,1.10564 v 0.491396 z m 5.7739,0.798518 c 0.0077,0.406938 -0.107493,0.575855 -0.391582,0.575855 -0.11517,0 -0.230341,-0.03839 -0.383903,-0.130527 l -0.898333,-0.529786 c -0.130527,-0.08446 -0.27641,-0.122849 -0.414615,-0.122849 -0.499074,0 -0.79084,0.383903 -0.82923,1.113318 h 0.406937 c 0.01536,-0.176595 0.03071,-0.253376 0.06142,-0.330156 0.07678,-0.168917 0.19963,-0.268732 0.345513,-0.268732 0.07678,0 0.253376,0.06142 0.330157,0.107493 l 0.75245,0.483717 c 0.199629,0.122849 0.429971,0.19963 0.621922,0.19963 0.499074,0 0.806197,-0.376225 0.806197,-0.975114 v -0.122849 z"
+     id="text1"
+     style="font-size:7.67806px;font-family:Helvetica;text-anchor:middle;stroke-width:1.3"
+     aria-label="1~" />
+  <path
+     d="m 24.70408,21.854486 -10.4,-10.4"
+     fill="none"
+     stroke="#550022"
+     id="path1"
+     style="stroke-width:1.3" />
+  <path
+     d="M 54.494542,11.821086 V 1.4210857"
+     fill="none"
+     stroke="#550022"
+     id="path2"
+     inkscape:highlight-color="#000000"
+     style="stroke-width:1.3" />
+  <path
+     d="m 44.284342,21.854486 10.4,-10.4"
+     fill="none"
+     stroke="#550022"
+     id="path3"
+     style="stroke-width:1.3" />
+  <path
+     d="m 29.259346,55.540545 c -0.226206,-1.248 -0.943828,-1.8564 -2.191866,-1.8564 -0.764424,0 -1.380642,0.2418 -1.801856,0.7098 -0.514816,0.5616 -0.795624,1.3728 -0.795624,2.293201 0,0.935999 0.288608,1.739399 0.819025,2.2932 0.444613,0.4524 1.006231,0.662999 1.747253,0.662999 1.388444,0 2.168468,-0.7488 2.340072,-2.2542 h -0.748822 c -0.0624,0.39 -0.140404,0.6552 -0.257408,0.8814 -0.234008,0.468 -0.717622,0.7332 -1.326042,0.7332 -1.131034,0 -1.848656,-0.9048 -1.848656,-2.3244 0,-1.4586 0.678621,-2.3556 1.786254,-2.3556 0.460216,0 0.889228,0.1326 1.123236,0.3588 0.210606,0.195 0.32761,0.429 0.413412,0.858 z m 1.653653,-1.7628 h -0.65522 v 5.6862 h 0.65522 z"
+     id="text4"
+     style="font-size:7.80012px;font-family:Helvetica;text-anchor:end;stroke-width:1.30002"
+     aria-label="Cl" />
+  <g
+     id="g1"
+     transform="translate(-1.5999993)">
+    <text
+       x="13.627995"
+       y="10.258111"
+       fill="#000000"
+       font-family="Helvetica"
+       font-size="7.8px"
+       text-anchor="end"
+       id="text3"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;stroke-width:1.3">U1</text>
+    <text
+       x="47.834995"
+       y="10.347815"
+       fill="#000000"
+       font-family="Helvetica"
+       font-size="7.8px"
+       text-anchor="middle"
+       id="text5"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;stroke-width:1.3">V1</text>
+  </g>
+  <path
+     d="M 14.49518,11.821086 V 1.4210857"
+     fill="none"
+     stroke="#550022"
+     id="path5"
+     inkscape:highlight-color="#000000"
+     style="stroke-width:1.3" />
+  <path
+     d="m 34.30764,60.950132 v -8.45"
+     fill="none"
+     stroke="#550022"
+     id="path6"
+     style="stroke-width:1.1718;stroke-linecap:round" />
+  <metadata
+     id="metadata8">
+    <render-size
+       width="64"
+       height="64" />
+  </metadata>
+  <circle
+     cx="14.495181"
+     cy="1.221"
+     r="0.5"
+     fill="#808080"
+     id="circle11" />
+  <circle
+     cx="54.494537"
+     cy="1.221"
+     r="0.5"
+     fill="#808080"
+     id="circle11-5" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer1"
+     inkscape:label="DESACTIVA">
+    <path
+       d="m 42.10764,35.679983 -7.798721,0.243839 -7.801279,-0.150717 4.119665,6.353771 3.764467,6.553107 3.679057,-6.597609 z"
+       id="path7"
+       style="fill:none;stroke:#550022;stroke-width:1.25199;stroke-opacity:1" />
+    <path
+       d="m 42.176045,23.298937 -7.798721,0.243838 -7.801279,-0.150717 4.119665,6.353771 3.764467,6.553108 3.679057,-6.59761 z"
+       id="path8"
+       style="fill:none;stroke:#550022;stroke-width:1.25199;stroke-opacity:1" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="ACTIVA"
+     style="display:none">
+    <path
+       d="m 42.218638,35.798804 -7.798721,0.243839 -7.80128,-0.150717 4.119667,6.353771 3.764466,6.553107 3.679057,-6.597609 z"
+       id="path7-6"
+       style="fill:#7fff2a;fill-opacity:1;stroke:#550022;stroke-width:1.25199;stroke-opacity:1" />
+    <path
+       d="m 42.287042,23.417758 -7.798721,0.243838 -7.801279,-0.150717 4.119667,6.353771 3.764465,6.553108 3.679057,-6.59761 z"
+       id="path8-7"
+       style="fill:#7fff2a;fill-opacity:1;stroke:#550022;stroke-width:1.25199;stroke-opacity:1" />
+  </g>
+</svg>

@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.log
+*.egg
+*.egg-info/
+.venv/
+launcher/
+dist/
+dist_installer/
+build/
+evaPr-Setup-*.exe
+
+# Caches 
+.cache/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+.opencode

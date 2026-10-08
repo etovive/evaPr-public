@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 22 56" id="svg8" sodipodi:docname="switch-disconnector-1p-automatic-tripping.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)">
+   <title>Interruptor de Desconexion Automatica</title>
+  <defs id="defs8"/>
+  <sodipodi:namedview id="namedview8" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="11.214286" inkscape:cx="11.012739" inkscape:cy="27.999999" inkscape:window-width="1600" inkscape:window-height="829" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg8"/>
+  <line x1="6.7497" x2="18.334" y1="36.494" y2="36.494" stroke="#550022" stroke-linecap="round" id="line1"/>
+  <line x1="12.542" x2="12.542" y1="36.273" y2="53.173" stroke="#550022" id="line2"/>
+  <line x1="12.474" x2="12.474" y1="2.268" y2="19.668" stroke="#550022" stroke-width=".94462" id="line3"/>
+  <circle cx="12.474" cy="2.268" r=".5" fill="#808080" stroke-linecap="round" stroke-linejoin="round" stroke-width="12.28" style="paint-order:stroke fill markers" id="circle3"/>
+  <circle cx="12.542" cy="53.473" r=".5" fill="#808080" stroke-linecap="round" stroke-linejoin="round" stroke-width="12.28" style="paint-order:stroke fill markers" id="circle4"/>
+  <g inkscape:groupmode="layer" id="layer1" inkscape:label="ON" style="display:none">
+    <circle cx="12.474" cy="21.768" r="2.5" fill="#7fff2a" stroke="#550022" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="2" stroke-width="0.6" style="paint-order:stroke fill markers" id="circle6"/>
+    <path d="M 12.542,36.494 C 11.2646,30.3882 9.9871,24.282 8.7097,18.177" fill-rule="evenodd" stroke="#550022" stroke-linecap="round" stroke-miterlimit="2" style="paint-order:fill markers stroke" id="path6"/>
+    <path d="m 5.19,22.864 3.7959,-0.89589 1.4919,6.3257 -3.7959,0.89589 z" display="inline" stroke-width="0.65" id="path7"/>
+  </g>
+  <g inkscape:groupmode="layer" id="layer2" inkscape:label="OFF">
+    <path d="m1.3178 25.151 3.3833-1.9403 3.2324 5.6384-3.3833 1.9403z" stroke-width=".65" id="path4"/>
+    <circle cx="12.474" cy="21.768" r="2.5" fill="none" stroke="#550022" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="2" stroke-width=".6" style="paint-order:stroke fill markers" id="circle5"/>
+    <line x1="2.2604" x2="12.573" y1="18.424" y2="36.513" stroke="#550022" stroke-linecap="round" id="line5"/>
+  </g>
+  <text xml:space="preserve" style="font-size:10px;line-height:0px;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-rule:evenodd;stroke-width:1.036;stroke-miterlimit:2;paint-order:fill markers stroke" x="3.2706203" y="10.967999" id="text1"><tspan sodipodi:role="line" id="tspan1" x="3.2706203" y="10.967999">1</tspan></text>
+  <text xml:space="preserve" style="font-size:10px;line-height:0px;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-rule:evenodd;stroke-width:1.036;stroke-miterlimit:2;paint-order:fill markers stroke" x="2.8506222" y="50.122097" id="text2"><tspan sodipodi:role="line" id="tspan2" x="2.8506222" y="50.122097">2</tspan></text>
+</svg>

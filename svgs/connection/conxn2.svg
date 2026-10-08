@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 24 18" id="svg2" sodipodi:docname="conxn2.svg" inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)" width="24" height="18">
+  <title id="title1">Conexion Entrada</title>
+  <defs id="defs2"/>
+  <sodipodi:namedview id="namedview2" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="false" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="24.71875" inkscape:cx="8.3539823" inkscape:cy="6.2503161" inkscape:window-width="1600" inkscape:window-height="831" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg2" showborder="false" showgrid="false" showguides="false">
+    <inkscape:grid id="grid1" units="px" originx="0" originy="0" spacingx="1" spacingy="1" empcolor="#0099e5" empopacity="0.30196078" color="#0099e5" opacity="0.14901961" empspacing="5" enabled="true" visible="false"/>
+  </sodipodi:namedview>
+  <path d="M 0.46967879,9 H 21.066203" fill="none" stroke="#550022" stroke-width="0.802273" id="path1" style="stroke-linecap:square;stroke-width:1;stroke-dasharray:none"/>
+  <path d="M 1.9785905,14.463161 10.006588,8.9999996 1.9785905,3.5368393 v 5.4631603 z" stroke="#550022" stroke-width="0.675912" id="path2" style="fill:#550022"/>
+  <circle cx="-8.999999" cy="22.113125" r="0.5" fill="#808080" id="circle2" transform="rotate(-90)"/>
+</svg>

@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="32" height="56" fill="#ffffff" fill-rule="evenodd" font-family="Roboto" font-size="14px" stroke="#550022" stroke-linecap="round" stroke-linejoin="round" text-anchor="middle" version="1.1" viewBox="0 0 31.999999 56" id="svg46" sodipodi:docname="rele-thermal.svg" inkscape:version="1.4.3 (0d15f75042, 2025-12-25)">
+  <title id="title1">Rele Termico</title>
+  <defs id="defs46"/>
+  <sodipodi:namedview id="namedview46" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="false" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" showborder="false" showgrid="false" inkscape:zoom="32" inkscape:cx="17.65625" inkscape:cy="5.15625" inkscape:window-width="1600" inkscape:window-height="826" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg46" showguides="true">
+    <inkscape:grid id="grid46" units="px" originx="6.5925126" originy="9.3999996" spacingx="1" spacingy="1" empcolor="#0099e5" empopacity="0.30196078" color="#0099e5" opacity="0.14902" empspacing="5" enabled="true" visible="false"/>
+  </sodipodi:namedview>
+  <style id="style1">.B{stroke-width:.5}.C{font-size:7px}.D{fill:#000}.E{text-anchor:end}.F{stroke:none}</style>
+  <path d="m 16.125393,37.635111 a 0.49999992,0.198601 0 0 0 -0.5,0.198601 v 15.8886 a 0.49999992,0.198601 0 0 0 0.5,0.198601 0.49999992,0.198601 0 0 0 0.5,-0.198601 v -15.8886 a 0.49999992,0.198601 0 0 0 -0.5,-0.198601 z" fill="#550022" fill-rule="nonzero" stop-color="#000000" stroke="none" id="path3" style="stroke-width:2.81221;stroke-dasharray:none"/>
+  <path d="M 16.125914,3.0185 A 0.50000036,0.1932658 0 0 0 15.625913,3.2117658 V 18.673537 a 0.50000036,0.1932658 0 0 0 0.500001,0.193266 0.50000036,0.1932658 0 0 0 0.499999,-0.193266 V 3.2117658 A 0.50000036,0.1932658 0 0 0 16.125914,3.0185 Z" fill="#550022" fill-rule="nonzero" stop-color="#000000" stroke="none" id="path6" style="stroke-width:2.77415;stroke-dasharray:none"/>
+  <circle cx="16.125914" cy="2.5810001" r="0.5" fill="#808080" fill-rule="nonzero" stroke="none" style="paint-order:stroke fill markers" id="circle42"/>
+  <circle cx="16.125393" cy="54.299999" r="0.5" fill="#808080" fill-rule="nonzero" stroke="none" style="paint-order:stroke fill markers" id="circle43"/>
+  <path style="display:inline;fill:#550022;fill-opacity:1;stroke:#550022;stroke-width:0.190655;stroke-miterlimit:2;stroke-dasharray:none;stroke-opacity:1" d="m 16.137099,18.213328 a 0.4873905,0.47690694 0 0 0 -0.487378,0.476906 v 4.76907 a 0.48744061,0.47695597 0 0 0 0.487378,0.476906 h 9.26047 v 8.584424 h -9.26047 a 0.48744061,0.47695597 0 0 0 -0.487378,0.476906 v 4.76907 a 0.4873905,0.47690694 0 0 0 0.487378,0.476906 0.4873905,0.47690694 0 0 0 0.487399,-0.476906 v -4.292212 h 9.26047 a 0.48744061,0.47695597 0 0 0 0.487397,-0.476906 v -9.53814 a 0.48744061,0.47695597 0 0 0 -0.487397,-0.476906 h -9.26047 v -4.292212 a 0.4873905,0.47690694 0 0 0 -0.487399,-0.476906 z" id="path8-6"/>
+  <text xml:space="preserve" style="font-weight:300;font-size:10px;line-height:0px;font-family:Ubuntu;-inkscape-font-specification:'Ubuntu Light';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:none;fill-rule:evenodd;stroke:#ff0000;stroke-width:1.036;stroke-miterlimit:2;paint-order:fill markers stroke" x="6.4189911" y="12.020089" id="text1"><tspan sodipodi:role="line" id="tspan1" x="6.4189911" y="12.020089" style="fill:#000000;fill-opacity:1;stroke:none">1</tspan></text>
+  <text xml:space="preserve" style="font-weight:300;font-size:10px;line-height:0px;font-family:Ubuntu;-inkscape-font-specification:'Ubuntu Light';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.036;stroke-miterlimit:2;paint-order:fill markers stroke" x="5.9739971" y="50.693241" id="text4"><tspan sodipodi:role="line" id="tspan4" x="5.9739971" y="50.693241">2</tspan></text>
+  <metadata id="metadata1">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:title>Rele Termico</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+</svg>

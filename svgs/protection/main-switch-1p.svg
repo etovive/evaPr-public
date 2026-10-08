@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 22 56" id="svg22" sodipodi:docname="main-switch-1p.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)" width="22" height="56">
+   <title>Swicth 1p</title>
+  <defs id="defs22"/>
+  <sodipodi:namedview id="namedview22" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="false" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" showgrid="false" inkscape:zoom="8" inkscape:cx="9.0625" inkscape:cy="35" inkscape:window-width="1600" inkscape:window-height="829" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="layer2" showborder="false" showguides="true">
+    <inkscape:grid id="grid22" units="px" originx="0" originy="0" spacingx="1" spacingy="1" empcolor="#0099e5" empopacity="0.30196078" color="#0099e5" opacity="0.14901961" empspacing="5" enabled="true" visible="false"/>
+    <sodipodi:guide position="4.7773438,56.648438" orientation="0,-1" id="guide1" inkscape:locked="false"/>
+    <sodipodi:guide position="5.4505141,5.5254208" orientation="0,-1" id="guide2" inkscape:locked="false"/>
+    <sodipodi:guide position="29,61" orientation="0,-1" id="guide3" inkscape:locked="false"/>
+  </sodipodi:namedview>
+  <line x1="9.7116337" x2="21.296328" y1="36.499348" y2="36.499348" stroke="#550022" stroke-width="0.598208" id="line8" style="stroke-width:1;stroke-linecap:round;stroke-dasharray:none"/>
+  <line x1="15.504171" x2="15.504171" y1="36.278465" y2="53.178467" stroke="#550022" stroke-width="0.722526" id="line10" style="stroke-width:1;stroke-dasharray:none"/>
+  <line x1="15.436217" x2="15.436217" y1="2.2734492" y2="21.773209" stroke-width="0.656093" id="line11" style="stroke:#550022;stroke-width:1;stroke-dasharray:none"/>
+  <circle cx="15.436217" cy="2.0732522" fill="#808080" stroke-linecap="round" stroke-linejoin="round" stroke-width="12.28" style="paint-order:stroke fill markers" id="circle14" r="0.5"/>
+  <circle cx="15.504171" cy="53.599998" r="0.5" fill="#808080" stroke-linecap="round" stroke-linejoin="round" stroke-width="12.28" style="paint-order:stroke fill markers" id="circle15"/>
+  <line x1="10.142574" x2="22.399855" y1="26.701656" y2="26.701656" stroke="#550022" stroke-dasharray="2.81452, 2.81452" stroke-width="0.321671" id="line22"/>
+  <g inkscape:groupmode="layer" id="layer1" inkscape:label="DESACTIVA" style="display:inline">
+    <line x1="5.2223663" x2="15.534805" y1="18.429676" y2="36.517918" stroke="#550022" stroke-width="0.512457" id="line9" style="stroke-width:1;stroke-dasharray:none"/>
+  </g>
+  <g inkscape:groupmode="layer" id="layer2" inkscape:label="ACTIVA" style="display:none">
+    <path style="fill:none;stroke:#550022;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:2;paint-order:stroke fill markers" d="m 15.503976,36.499348 -2.78493,-18.610729 h 2.717171" id="path1" sodipodi:nodetypes="ccc"/>
+  </g>
+  <text xml:space="preserve" style="font-weight:300;font-size:10px;line-height:0px;font-family:Ubuntu;-inkscape-font-specification:'Ubuntu Light';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-rule:evenodd;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:2;paint-order:stroke fill markers" x="4.4998436" y="50.540001" id="text2"><tspan sodipodi:role="line" id="tspan2" x="4.4998436" y="50.540001">2</tspan></text>
+  <text xml:space="preserve" style="font-weight:300;font-size:10px;line-height:0px;font-family:Ubuntu;-inkscape-font-specification:'Ubuntu Light';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-rule:evenodd;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:2;paint-order:stroke fill markers" x="4.7698326" y="11.465004" id="text1"><tspan sodipodi:role="line" id="tspan1" x="4.7698326" y="11.465004">1</tspan></text>
+</svg>

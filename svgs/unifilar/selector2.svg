@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" version="1.1" viewBox="0 0 67 63" id="svg13" sodipodi:docname="selector2.svg" inkscape:version="1.4.3 (0d15f75042, 2025-12-25)" width="67" height="63">
+  <title id="title1">Selector de 3p</title>
+  <defs id="defs13">
+    <inkscape:path-effect effect="fillet_chamfer" id="path-effect7" is_visible="true" lpeversion="1" nodesatellites_param="F,0,0,1,0,0,0,1 @ F,0,0,1,0,20.085942,0,1 @ F,0,0,1,0,0,0,1" radius="0" unit="px" method="auto" mode="F" chamfer_steps="1" flexible="false" use_knot_distance="true" apply_no_radius="true" apply_with_radius="true" only_selected="false" hide_knots="false"/>
+    <inkscape:path-effect effect="fillet_chamfer" id="path-effect7-6" is_visible="true" lpeversion="1" nodesatellites_param="F,0,0,1,0,0,0,1 @ F,0,0,1,0,20.085942,0,1 @ F,0,0,1,0,0,0,1" radius="0" unit="px" method="auto" mode="F" chamfer_steps="1" flexible="false" use_knot_distance="true" apply_no_radius="true" apply_with_radius="true" only_selected="false" hide_knots="false"/>
+  </defs>
+  <sodipodi:namedview id="namedview13" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="false" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="5.6568543" inkscape:cx="2.2097087" inkscape:cy="10.783378" inkscape:window-width="1600" inkscape:window-height="826" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg13" showguides="true" showborder="false">
+    <sodipodi:guide position="34.994629,66.371094" orientation="1,0" id="guide1" inkscape:locked="false"/>
+  </sodipodi:namedview>
+  <ellipse cx="35.172543" cy="36.07769" fill="none" stroke="#550022" stroke-width="0.985497" id="ellipse1" style="display:inline" rx="11.857252" ry="11.794752"/>
+  <path style="display:inline;fill:none;stroke:#550022;stroke-width:0.918953;stroke-linecap:square;stroke-dasharray:none;stroke-dashoffset:0;stroke-linejoin:bevel" d="M 35.020092,23.860076 34.975897,18.14323 54.111974,5.6204805" id="path1" sodipodi:nodetypes="ccc"/>
+  <metadata id="metadata1">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:title>Transformador Unifilar</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <circle cx="34.953815" cy="48.853783" fill="#808080" id="circle12" style="stroke-width:1.3" r="0.5"/>
+  <path style="fill:#550022;stroke:#550022;stroke-width:0.7;stroke-linecap:square;stroke-dasharray:none" d="m 46.359688,10.650795 5.656854,9.148194 v 0" id="path2"/>
+  <path style="fill:none;stroke:#550022;stroke-width:0.7;stroke-linecap:square;stroke-dasharray:none" d="m 50.243469,8.1724008 5.656854,9.1481942 v 0" id="path2-6"/>
+  <path style="fill:none;stroke:#550022;stroke-width:0.7;stroke-linecap:square;stroke-dasharray:none" d="m 54.187158,5.5372164 5.656854,9.1481936 v 0" id="path2-5"/>
+</svg>

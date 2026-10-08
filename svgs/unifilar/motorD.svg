@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" version="1.1" viewBox="0 0 67 63" id="svg13" sodipodi:docname="motorD.svg" inkscape:version="1.4.3 (0d15f75042, 2025-12-25)" width="67" height="63">
+  <title id="title1">M. Dosificadora Unifilar</title>
+  <defs id="defs13">
+    <inkscape:path-effect effect="fillet_chamfer" id="path-effect7" is_visible="true" lpeversion="1" nodesatellites_param="F,0,0,1,0,0,0,1 @ F,0,0,1,0,20.085942,0,1 @ F,0,0,1,0,0,0,1" radius="0" unit="px" method="auto" mode="F" chamfer_steps="1" flexible="false" use_knot_distance="true" apply_no_radius="true" apply_with_radius="true" only_selected="false" hide_knots="false"/>
+    <inkscape:path-effect effect="fillet_chamfer" id="path-effect7-6" is_visible="true" lpeversion="1" nodesatellites_param="F,0,0,1,0,0,0,1 @ F,0,0,1,0,20.085942,0,1 @ F,0,0,1,0,0,0,1" radius="0" unit="px" method="auto" mode="F" chamfer_steps="1" flexible="false" use_knot_distance="true" apply_no_radius="true" apply_with_radius="true" only_selected="false" hide_knots="false"/>
+  </defs>
+  <sodipodi:namedview id="namedview13" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="false" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="8.0000001" inkscape:cx="35.1875" inkscape:cy="21.75" inkscape:window-width="1600" inkscape:window-height="826" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg13" showguides="true" showborder="false">
+    <sodipodi:guide position="34.716308,56.495606" orientation="1,0" id="guide1" inkscape:locked="false"/>
+  </sodipodi:namedview>
+  <circle cx="34.576572" cy="37.261288" fill="none" stroke="#550022" stroke-width="1.456" id="ellipse1" r="17.472" style="display:inline"/>
+  <path style="fill:#550022;stroke:#550022;stroke-width:1.00019;stroke-linecap:square;stroke-dasharray:6.00113, 1.00019" d="M 34.754162,18.801637 34.7184,6.5632889" id="path1"/>
+  <metadata id="metadata1">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:title>Motor Monofasico</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <circle cx="34.737652" cy="5.6029029" fill="#808080" id="circle12" style="stroke-width:1.3" r="0.5"/>
+  <path sodipodi:type="star" style="fill:none;stroke:#550022;stroke-width:0.7;stroke-linecap:square;stroke-dasharray:0.7, 1.39999" id="path2" inkscape:flatsided="false" sodipodi:sides="3" sodipodi:cx="27.930717" sodipodi:cy="29.698484" sodipodi:r1="10.536024" sodipodi:r2="5.268012" sodipodi:arg1="-0.52747058" sodipodi:arg2="0.51972697" inkscape:rounded="0" inkscape:randomized="0" d="m 37.034717,24.395184 -4.531603,7.919623 -4.531603,7.919623 -4.592793,-7.884295 -4.592793,-7.884295 9.124396,-0.03533 z" inkscape:transform-center-x="0.020396682" inkscape:transform-center-y="2.6163223" transform="translate(6.7175143,1.059136)"/>
+  <path sodipodi:type="star" style="fill:none;stroke:#550022;stroke-width:0.7;stroke-linecap:square;stroke-dasharray:0.7, 1.39999" id="path2-6" inkscape:flatsided="false" sodipodi:sides="3" sodipodi:cx="27.930717" sodipodi:cy="29.698484" sodipodi:r1="10.536024" sodipodi:r2="5.268012" sodipodi:arg1="-0.52747058" sodipodi:arg2="0.51972697" inkscape:rounded="0" inkscape:randomized="0" d="m 37.034717,24.395184 -4.531603,7.919623 -4.531603,7.919623 -4.592793,-7.884295 -4.592793,-7.884295 9.124396,-0.03533 z" inkscape:transform-center-x="0.020396682" inkscape:transform-center-y="2.6163223" transform="translate(6.6537409,12.75857)"/>
+</svg>

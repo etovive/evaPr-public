@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" viewBox="-10 -10 24 48" fill="#ffffff" fill-rule="evenodd" stroke="#550022" stroke-linecap="round" stroke-linejoin="round" font-family="Roboto" font-size="14px" text-anchor="middle" version="1.1" id="svg4" sodipodi:docname="limit-switch-nc.svg" width="24" height="48" inkscape:version="1.4.3 (0d15f75042, 2025-12-25)">
+   <title>Final de Carrera 1p</title>
+  <sodipodi:namedview id="namedview4" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="false" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" showborder="false" inkscape:zoom="7.877767" inkscape:cx="10.472511" inkscape:cy="17.835003" inkscape:window-width="1600" inkscape:window-height="821" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="layer2" showgrid="false">
+    <inkscape:grid id="grid8" units="px" originx="0" originy="0" spacingx="1" spacingy="1" empcolor="#0099e5" empopacity="0.30196078" color="#0099e5" opacity="0.14901961" empspacing="5" enabled="true" visible="false"/>
+  </sodipodi:namedview>
+  <defs id="defs1"/>
+  <path style="baseline-shift:baseline;text-anchor:start;display:inline;overflow:visible;fill:#550022;fill-rule:nonzero;stroke:#550022;stroke-width:0.49232;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;enable-background:accumulate;stop-color:#000000" d="m 8.9978918,5.2108589 a 0.25,0.22396576 0 0 0 -0.322266,0.1312296 l -7.5,17.9172615 a 0.250025,0.22398817 0 0 0 -0.015625,0.07873 v 13.43795 a 0.25,0.22396576 0 0 0 0.25,0.223966 0.25,0.22396576 0 0 0 0.25,-0.223966 V 23.378331 L 9.1443758,5.4995651 A 0.25,0.22396576 0 0 0 8.9978918,5.2108589 Z" id="path4"/>
+  <path style="baseline-shift:baseline;text-anchor:start;display:inline;overflow:visible;fill:#550022;fill-rule:nonzero;stroke:#550022;stroke-width:0.3;stroke-linecap:butt;stroke-linejoin:miter;enable-background:accumulate;stop-color:#000000;stroke-opacity:1;stroke-dasharray:none" d="m 1.4588288,10.744672 a 0.250025,0.23103105 0 0 0 -0.2968749,0.249056 l 0.9999999,10.164349 a 0.25,0.23100795 0 0 0 0.271485,0.207547 0.25,0.23100795 0 0 0 0.224609,-0.250861 l -0.96875,-9.853932 4.671875,0.862671 a 0.25,0.23100795 0 0 0 0.294922,-0.182281 0.25,0.23100795 0 0 0 -0.197266,-0.272517 z" id="path6"/>
+  <symbol id="A" overflow="visible">
+    <path d="M 17.5,15 10,35 v 15" fill="none" stroke-width="0.5" id="path1"/>
+    <path d="M 10,0 V 18 H 20" fill="none" stroke-width="0.5" id="path2"/>
+    <path d="m 15,22 -5,-1 1,11" fill="none" stroke-width="0.5" id="path3"/>
+    <text fill="#000000" font-size="7px" text-anchor="end" stroke="none" id="text4"><tspan x="8" y="9" id="tspan3">11</tspan><tspan x="8" y="46.810001" id="tspan4">12</tspan></text>
+  </symbol>
+  <circle style="fill:#808080;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;paint-order:stroke fill markers" id="path9-7" cx="1.4100008" cy="37.499996" r="0.5"/>
+  <g inkscape:groupmode="layer" id="layer1" inkscape:label="ON" style="display:none">
+    <path style="display:inline;fill:none;fill-rule:evenodd;stroke:#550022;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:2;paint-order:stroke fill markers" d="m 1.4138392,-8.4935431 c 0.083398,5.6619282 0.2897722,11.322045 0.250173,16.985785" id="path10-7" sodipodi:nodetypes="cc"/>
+  </g>
+  <g inkscape:groupmode="layer" id="layer2" inkscape:label="OFF" style="display:inline">
+    <path style="display:inline;fill:none;fill-rule:evenodd;stroke:#550022;stroke-width:1.036;stroke-miterlimit:2;stroke-opacity:1;paint-order:fill markers stroke" d="M 1.425868,-9 V 6 H 12" id="path5"/>
+  </g>
+  <text xml:space="preserve" style="font-weight:300;font-size:10px;line-height:0px;font-family:Ubuntu;-inkscape-font-specification:'Ubuntu Light';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-rule:evenodd;stroke:none;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:2;paint-order:stroke fill markers" x="-8.5400028" y="33.540001" id="text1"><tspan sodipodi:role="line" id="tspan1" x="-8.5400028" y="33.540001">2</tspan></text>
+  <text xml:space="preserve" style="font-weight:300;font-size:10px;line-height:0px;font-family:Ubuntu;-inkscape-font-specification:'Ubuntu Light';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-rule:evenodd;stroke:none;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:2;paint-order:stroke fill markers" x="-8.1700201" y="2.0620646" id="text2"><tspan sodipodi:role="line" id="tspan2" x="-8.1700201" y="2.0620646">1</tspan></text>
+  <circle style="fill:#808080;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;paint-order:stroke fill markers" id="path9" cx="1.4258683" cy="-9.5" r="0.5"/>
+</svg>

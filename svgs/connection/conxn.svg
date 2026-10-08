@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 24 18" id="svg2" sodipodi:docname="conxn.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)" width="24" height="18">
+   <title>Conexion Salida</title>
+  <defs id="defs2"/>
+  <sodipodi:namedview id="namedview2" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="21.881026" inkscape:cx="18.8748" inkscape:cy="8.5462172" inkscape:window-width="1600" inkscape:window-height="863" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg2"/>
+  <path d="M 24.091403,9.0000002 H 1.8914034" fill="none" stroke="#550022" stroke-width="0.59081" id="path1" style="stroke-width:1;stroke-dasharray:none"/>
+  <path d="M 14.182912,3.6142259 22.29041,9.0000005 14.182912,14.385774 V 9.0000005 Z" stroke="#550022" stroke-width="0.674424" id="path2"/>
+  <circle cx="1.5914034" cy="8.9998999" r="0.5" fill="#808080" style="paint-order:stroke fill markers" id="circle2"/>
+</svg>

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0.0.2
+Type=Application
+Name=eduCAd (evaPr)
+Comment=Diagramador de Circuitos Eléctricos Industriales
+Exec=/usr/bin/env python3 /home/edu/Documentos/eduCAd/evaPr.py
+Icon=evaPr
+Terminal=false
+Categories=Education;Engineering;
+Keywords=circuit;electric;industry;
+StartupNotify=true
+Path=/home/edu/Documentos/eduCAd

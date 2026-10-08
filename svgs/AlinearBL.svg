@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   id="svg2"
+   width="25"
+   height="25"
+   viewBox="0 0 25 25"
+   version="1.1"
+   sodipodi:docname="AlinearBL.svg"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="20.52"
+     inkscape:cx="12.5"
+     inkscape:cy="12.475634"
+     inkscape:window-width="1600"
+     inkscape:window-height="826"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <title
+     id="title1">Alinear Distribuir</title>
+  <defs
+     id="defs1">
+    <marker
+       id="a"
+       markerHeight="1"
+       markerWidth="1"
+       orient="auto"
+       overflow="visible"
+       preserveAspectRatio="xMidYMid"
+       viewBox="0 0 1 1">
+      <path
+         id="path1"
+         fill="context-stroke"
+         fill-rule="evenodd"
+         d="M0-7.071-7.071 0 0 7.071 7.071 0Z"
+         transform="scale(.45)" />
+    </marker>
+    <marker
+       id="a-3"
+       markerHeight="1"
+       markerWidth="1"
+       orient="auto"
+       overflow="visible"
+       preserveAspectRatio="xMidYMid"
+       viewBox="0 0 1 1">
+      <path
+         id="path1-7"
+         fill="context-stroke"
+         fill-rule="evenodd"
+         d="M 0,-7.071 -7.071,0 0,7.071 7.071,0 Z"
+         transform="scale(0.45)" />
+    </marker>
+  </defs>
+  <path
+     id="rect1"
+     fill="#fea"
+     stroke="#000000"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     stroke-miterlimit="2"
+     stroke-width="0.788357"
+     d="M 1.5813125,1.955582 H 7.7929554 V 8.1672247 H 1.5813125 Z"
+     style="fill:#666666;paint-order:stroke fill markers" />
+  <path
+     id="rect1-5"
+     fill="#fea"
+     stroke="#000000"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     stroke-miterlimit="2"
+     stroke-width="0.788357"
+     d="m 17.409773,1.955582 h 6.211642 v 6.2116427 h -6.211642 z"
+     style="fill:#666666;paint-order:stroke fill markers" />
+  <path
+     id="rect1-2"
+     fill="#fea"
+     stroke="#000000"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     stroke-miterlimit="2"
+     stroke-width="0.788357"
+     d="m 17.409773,9.8002969 h 6.211642 V 16.01194 h -6.211642 z"
+     style="fill:#666666;paint-order:stroke fill markers" />
+  <path
+     id="rect1-7"
+     fill="#fea"
+     stroke="#000000"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     stroke-miterlimit="2"
+     stroke-width="0.788357"
+     d="m 1.5813125,9.8002969 h 6.211643 v 6.2116421 h -6.211643 z"
+     style="fill:#666666;paint-order:stroke fill markers" />
+  <path
+     id="rect1-6"
+     fill="#fea"
+     stroke="#000000"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     stroke-miterlimit="2"
+     stroke-width="0.788357"
+     d="m 1.5813125,17.614451 h 6.2116429 v 6.211643 H 1.5813125 Z"
+     style="fill:#666666;paint-order:stroke fill markers" />
+  <path
+     id="rect1-61"
+     fill="#fea"
+     stroke="#000000"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     stroke-miterlimit="2"
+     stroke-width="0.788357"
+     d="M 9.4955425,1.955582 H 15.707186 V 8.167225 H 9.4955425 Z"
+     style="fill:#ffe680;paint-order:stroke fill markers" />
+  <path
+     id="rect1-20"
+     fill="#fea"
+     stroke="#000000"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     stroke-miterlimit="2"
+     stroke-width="0.788357"
+     d="M 9.4955432,9.8002969 H 15.707185 V 16.011939 H 9.4955432 Z"
+     style="fill:#ffe680;paint-order:stroke fill markers" />
+  <path
+     id="path2"
+     fill="#00ff00"
+     stroke="#0f0"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     stroke-miterlimit="2"
+     stroke-width="0.56"
+     marker-end="url(#a)"
+     d="M 4.2322007,1.1266648 V 22.857664"
+     style="stroke:#ff0000;paint-order:stroke fill markers" />
+  <path
+     id="path2-2"
+     fill="#00ff00"
+     stroke="#0f0"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     stroke-miterlimit="2"
+     stroke-width="0.56"
+     marker-end="url(#a-3)"
+     d="M 4.1790917,11.678122 23.181045,11.629389"
+     style="stroke:#ff0000;marker-end:url(#a-3);paint-order:stroke fill markers"
+     sodipodi:nodetypes="cc" />
+  <metadata
+     id="metadata1">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>Alinear Verticalmente</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+</svg>

@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" fill="#ffffff" fill-rule="evenodd" font-family="Roboto" font-size="14px" stroke="#550022" stroke-linecap="round" stroke-linejoin="round" text-anchor="middle" version="1.1" viewBox="0 0 84 26" id="svg8" sodipodi:docname="circuit-breaker-1p-magnetic.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)">
+   <title>Breaker Magnetico</title>
+  <defs id="defs8"/>
+  <sodipodi:namedview id="namedview8" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="11.313709" inkscape:cx="36.681164" inkscape:cy="14.937631" inkscape:window-width="1600" inkscape:window-height="829" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg8"/>
+  <path d="m83.062 15.391a0.5 0.5 0 0 1-0.49982-0.49913 0.5 0.5 0 0 1 0.49808-0.50086 0.5 0.5 0 0 1 0.50191 0.49703 0.5 0.5 0 0 1-0.49597 0.50295" fill="#808080" fill-rule="evenodd" stroke="none" style="paint-order:stroke fill markers" id="path6"/>
+  <path d="m39.562 14.899h15l2.5-5 5 10 2.5-5h17.5" fill="none" stroke="#550022" stroke-linecap="round" stroke-miterlimit="2" style="paint-order:fill markers stroke" id="path7"/>
+  <text x="4.5251908" y="12.170958" fill="#000000" fill-rule="evenodd" font-family="Ubuntu" font-size="10px" font-weight="300" stroke="none" stroke-miterlimit="2" stroke-width="1.036" text-anchor="start" style="line-height:0px;paint-order:fill markers stroke" xml:space="preserve" id="text7"><tspan x="4.5251908" y="12.170958" font-size="10px" id="tspan7">1</tspan></text>
+  <text x="75.682121" y="12.230955" fill="#000000" fill-rule="evenodd" font-family="Ubuntu" font-size="10px" font-weight="300" stroke="none" stroke-miterlimit="2" stroke-width="1.036" text-anchor="start" style="line-height:0px;paint-order:fill markers stroke" xml:space="preserve" id="text8"><tspan x="75.682121" y="12.230955" font-size="10px" id="tspan8">2</tspan></text>
+  <g inkscape:groupmode="layer" id="layer2" inkscape:label="OFF" style="display:inline">
+    <path d="m 27.062,7.0344 v 13.183" stroke-dasharray="0.574091, 1.72227" stroke-width="0.57409" id="path2" style="display:inline;stroke-width:0.6;stroke-dasharray:0.600001, 1.8;stroke-dashoffset:0"/>
+    <path d="m 6.9,0.253 c 3.3333,-1.0833 6.6666,-2.1666 10,-2.1666 3.3334,0 6.6667,1.0833 10,2.1666" fill="none" stroke="#550022" stroke-linecap="round" stroke-miterlimit="2" stroke-width="0.975" style="display:inline;fill:none;stroke:#550022;stroke-width:0.975376;stroke-dasharray:none;paint-order:fill markers stroke" id="path3" transform="matrix(0.99697,0,0,1.1316,10.213,9.56)"/>
+  </g>
+  <g inkscape:groupmode="layer" id="layer1" inkscape:label="ON" style="display:none">
+    <path d="M 17.092,11.946725 C 20.4152,10.720862 23.7384,9.495 27.0617,9.495 c 3.3233,0 6.6465,1.225862 9.9697,2.451725" fill="none" stroke="#550022" stroke-linecap="round" stroke-miterlimit="2" stroke-width="0.975" style="display:inline;fill:none;stroke:#ff0000;stroke-width:1.036;stroke-dasharray:none;paint-order:fill markers stroke" id="path3-6"/>
+    <circle cx="6.9000001" cy="5.2529998" r="2.5" display="inline" fill="#00ff00" id="circle4" transform="translate(10.162001,9.6410003)" style="display:inline"/>
+    <circle cx="36.762001" cy="14.694" r="2.5" display="inline" fill="#00ff00" id="circle5" style="display:inline"/>
+    <path d="m 16.9,-0.89272 v 11.48" stroke-dasharray="1.07146, 1.07146" stroke-width="0.53573" id="path4" transform="translate(10.162001,9.6410003)" style="display:inline"/>
+  </g>
+  <ellipse style="fill:none;fill-rule:evenodd;stroke:#550022;stroke-width:0.92913;stroke-linecap:square;stroke-miterlimit:2;stroke-dasharray:none;paint-order:fill markers stroke" id="path8" cx="17.056999" cy="14.87" rx="2.535435" ry="2.5354347"/>
+  <ellipse style="fill:none;fill-rule:evenodd;stroke:#550022;stroke-width:0.92913;stroke-linecap:square;stroke-miterlimit:2;stroke-dasharray:none;paint-order:fill markers stroke" id="path8-5" cx="36.804001" cy="14.670173" rx="2.535435" ry="2.5354347"/>
+  <path style="fill:none;fill-rule:evenodd;stroke:#550022;stroke-width:0.998289;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:11.2;stroke-dasharray:none;paint-order:stroke fill markers" d="M 1.7909756,14.891896 13.557177,14.872584" id="path1"/>
+  <path d="m1.0651 15.394a0.5 0.5 0 0 1-0.49982-0.49913 0.5 0.5 0 0 1 0.49808-0.50086 0.5 0.5 0 0 1 0.50191 0.49703 0.5 0.5 0 0 1-0.49597 0.50295" fill="#808080" fill-rule="evenodd" stroke="none" style="paint-order:stroke fill markers" id="path5"/>
+</svg>

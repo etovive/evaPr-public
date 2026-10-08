@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 50 56" id="svg22" sodipodi:docname="Contactor-auxiliar.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)" width="50" height="56">
+   <title>Auxiliar Rele Termico</title>
+  <defs id="defs22"/>
+  <sodipodi:namedview id="namedview22" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="false" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" showgrid="false" inkscape:zoom="5.6568545" inkscape:cx="-1.1490485" inkscape:cy="1.0606601" inkscape:window-width="1600" inkscape:window-height="829" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg22" showborder="false" showguides="true">
+    <inkscape:grid id="grid22" units="px" originx="0" originy="0" spacingx="1" spacingy="1" empcolor="#0099e5" empopacity="0.30196078" color="#0099e5" opacity="0.14901961" empspacing="5" enabled="true" visible="false"/>
+  </sodipodi:namedview>
+  <line x1="37.303631" x2="48.888317" y1="37.025551" y2="37.025551" stroke="#550022" stroke-width="0.598208" id="line8" style="stroke-width:1;stroke-linecap:round;stroke-dasharray:none"/>
+  <line x1="43.096169" x2="43.096169" y1="36.804668" y2="53.70467" stroke="#550022" stroke-width="0.722526" id="line10" style="stroke-width:1;stroke-dasharray:none"/>
+  <line x1="43.128654" x2="43.128654" y1="2.7996523" y2="22.299412" stroke-width="0.656093" id="line11" style="stroke:#550022;stroke-width:1;stroke-dasharray:none"/>
+  <circle cx="43.128654" cy="2.5994554" fill="#808080" stroke-linecap="round" stroke-linejoin="round" stroke-width="12.28" style="paint-order:stroke fill markers" id="circle14" r="0.5"/>
+  <circle cx="43.096169" cy="54.126202" r="0.5" fill="#808080" stroke-linecap="round" stroke-linejoin="round" stroke-width="12.28" style="paint-order:stroke fill markers" id="circle15"/>
+  <line x1="32.814365" x2="43.126804" y1="18.955879" y2="37.044121" stroke="#550022" stroke-width="0.512457" id="line9" style="display:inline;stroke-width:1;stroke-dasharray:none"/>
+  <line x1="17.846537" x2="17.846537" y1="36.804668" y2="53.70467" stroke="#550022" stroke-width="0.722526" id="line10-7" style="display:inline;stroke-width:1;stroke-dasharray:none"/>
+  <line x1="28.065634" x2="17.753197" y1="18.955879" y2="37.044121" stroke="#550022" stroke-width="0.512457" id="line9-2" style="display:inline;stroke-width:1;stroke-dasharray:none"/>
+  <text xml:space="preserve" style="font-weight:300;font-size:9px;line-height:0px;font-family:Ubuntu;-inkscape-font-specification:'Ubuntu Light';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;display:inline;fill:#000000;fill-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:2;paint-order:stroke fill markers" x="6.8880024" y="10.598001" id="text1"><tspan sodipodi:role="line" id="tspan1" x="6.8880024" y="10.598001">95</tspan></text>
+  <text xml:space="preserve" style="font-weight:300;font-size:9px;line-height:0px;font-family:Ubuntu;-inkscape-font-specification:'Ubuntu Light';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;display:inline;fill:#000000;fill-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:2;paint-order:stroke fill markers" x="32.345634" y="10.649997" id="text2"><tspan sodipodi:role="line" id="tspan2" x="32.345634" y="10.649997">97</tspan></text>
+  <text xml:space="preserve" style="font-weight:300;font-size:9px;line-height:0px;font-family:Ubuntu;-inkscape-font-specification:'Ubuntu Light';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;display:inline;fill:#000000;fill-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:2;paint-order:stroke fill markers" x="6.7880025" y="50.426517" id="text1-3"><tspan sodipodi:role="line" id="tspan1-6" x="6.7880025" y="50.426517">96</tspan></text>
+  <text xml:space="preserve" style="font-weight:300;font-size:9px;line-height:0px;font-family:Ubuntu;-inkscape-font-specification:'Ubuntu Light';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;display:inline;fill:#000000;fill-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:2;paint-order:stroke fill markers" x="32.424" y="50.510197" id="text2-6"><tspan sodipodi:role="line" id="tspan2-2" x="32.424" y="50.510197">98</tspan></text>
+  <circle cx="17.846537" cy="54.126202" r="0.5" fill="#808080" stroke-linecap="round" stroke-linejoin="round" stroke-width="12.28" style="display:inline;paint-order:stroke fill markers" id="circle15-5"/>
+  <line x1="17.878656" x2="17.878656" y1="2.7996521" y2="22.299412" stroke-width="0.656093" id="line11-5" style="display:inline;stroke:#550022;stroke-width:1;stroke-dasharray:none"/>
+  <line x1="12.054" x2="23.638687" y1="37.025551" y2="37.025551" stroke="#550022" stroke-width="0.598208" id="line8-6" style="display:inline;stroke-width:1;stroke-linecap:round;stroke-dasharray:none"/>
+  <circle cx="17.878656" cy="2.5994549" fill="#808080" stroke-linecap="round" stroke-linejoin="round" stroke-width="12.28" style="display:inline;paint-order:stroke fill markers" id="circle14-3" r="0.5"/>
+  <line x1="0.092286825" x2="43.66161" y1="27.227859" y2="27.227859" stroke="#550022" stroke-dasharray="2.81452, 2.81452" stroke-width="0.606465" id="line22"/>
+  <g inkscape:groupmode="layer" id="layer1" inkscape:label="DESACTIVA" style="display:inline">
+    <line x1="17.888409" x2="26.711479" y1="21.911144" y2="21.911144" stroke="#550022" stroke-width="0.598208" id="line8-6-0" style="display:inline;stroke-width:0.872706;stroke-linecap:round;stroke-dasharray:none"/>
+  </g>
+  <g inkscape:groupmode="layer" id="layer2" inkscape:label="ACTIVA" style="display:none">
+    <line x1="34.369228" x2="43.192303" y1="21.863058" y2="21.863058" stroke="#550022" stroke-width="0.598208" id="line8-6-0-1" style="display:inline;stroke-width:0.872706;stroke-linecap:round;stroke-dasharray:none"/>
+  </g>
+  <path style="fill:none;fill-rule:evenodd;stroke:#550022;stroke-width:0.7;stroke-linecap:round;stroke-miterlimit:2;stroke-opacity:1;paint-order:fill markers stroke" d="m 46.230657,21.510024 v 2.537713 H 49.65 v 6.89429 l -3.37783,-0.01563 -5e-6,2.625762" id="path1" sodipodi:nodetypes="cccccc"/>
+  <path style="fill:none;fill-rule:evenodd;stroke:#550022;stroke-width:0.7;stroke-linecap:round;stroke-miterlimit:2;stroke-opacity:1;paint-order:fill markers stroke" d="M 0.97227178,30.383537 V 27.25 H 4.8613589 v 0 H 3.844893 v 3.26612" id="path3"/>
+</svg>

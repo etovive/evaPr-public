@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 18 16" id="svg1" sodipodi:docname="fase.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)">
+   <title>Fase</title>
+  <defs id="defs1"/>
+  <sodipodi:namedview id="namedview1" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="30.944444" inkscape:cx="8.983842" inkscape:cy="8.0143627" inkscape:window-width="1600" inkscape:window-height="863" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg1"/>
+  <ellipse transform="matrix(0,1,1,0,0,0)" cx="8" cy="4.7361" rx="4.0141" ry="3.7641" fill="none" stroke="#550022" stroke-linecap="round" stroke-linejoin="round" id="ellipse1"/>
+  <path d="m 8.962868,8 h 7.459" fill="none" stroke="#550022" stroke-linecap="square" stroke-width=".52" id="path1" style="stroke-width:1;stroke-dasharray:none"/>
+  <circle transform="matrix(0,1,1,0,0,0)" cx="8" cy="17.332315" r="0.5" fill="#808080" id="circle1"/>
+</svg>

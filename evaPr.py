@@ -9,6 +9,7 @@ from tkinter import messagebox, ttk, filedialog
 import json
 from datetime import datetime
 import os
+import sys
 import copy
 import types
 import traceback
@@ -29,14 +30,21 @@ from ui.export_dialog import (
     show_save_success,
 )
 
+# En un build de ventana (PyInstaller console=False) sys.stdout/sys.stderr son
+# None: un StreamHandler intentaría escribir en un flujo inexistente. Solo se
+# añade si hay una consola real con la que imprimir.
+_log_handlers = []
+if sys.stderr is not None:
+    _log_handlers.append(logging.StreamHandler())
+_log_handlers.append(
+    RotatingFileHandler("evaPr_debug.log", maxBytes=5 * 1024 * 1024,
+                        backupCount=3, encoding='utf-8', delay=True)
+)
+
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        RotatingFileHandler("evaPr_debug.log", maxBytes=5 * 1024 * 1024,
-                            backupCount=3, encoding='utf-8', delay=True)
-    ]
+    handlers=_log_handlers,
 )
 # Silenciar logs verbosos de librerías externas.  ezdxf en particular escribía
 # ~25 000 líneas DEBUG por cada exportación DXF (setup=True), lo que costaba
@@ -52,6 +60,24 @@ def _report_error(context, e):
     msg = f"[{context}] {type(e).__name__}: {e}"
     _log.error(msg)
     _log.debug(traceback.format_exc())
+
+def _set_windows_app_user_model_id(app_id="eduCAd.evaPr"):
+    """Fija el AppUserModelID en Windows.
+
+    Windows agrupa los botones de la barra de tareas y decide si se puede anclar
+    una ventana según el AppUserModelID del proceso. Tkinter/PyInstaller no fijan
+    ninguno, así que la ventana queda asociada al lanzador (cmd.exe/python.exe) y
+    "Anclar a la barra de tareas" no funciona o no persiste. Debe llamarse ANTES
+    de crear la ventana raíz de Tk y usar el mismo id que los accesos directos
+    creados por el instalador (installer.nsi).
+    """
+    if sys.platform != "win32":
+        return
+    try:
+        import ctypes
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+    except Exception as e:
+        _report_error("AppUserModelID", e)
 
 # Imports para SVG
 try:
@@ -6750,7 +6776,7 @@ class PlanoElectrico:
         text_frame = tk.Frame(about_window)
         text_frame.pack(expand=True, fill="both", padx=20, pady=(20, 8))
 
-        about_text = "evaPr v0.700\nGPL3\nDiagramador de Planos Electricos para Linux.\nHecho por etovive\nMejorado por Luka\n\n✓ Formato .ecad\n✓ Exportación PDF\n✓ Líneas consistentes\n\nAgradezco los aportes y pull requests de la comunidad,\npero no puedo brindar soporte técnico ni garantía.\nEl proyecto se comparte para quien desee colaborar.\n\nNota Legal: Las dimensiones y recomendaciones de evaPR son referenciales. La validación final de cálculos y componentes debe ser realizada por el profesional eléctrico responsable. La herramienta no sustituye el diseño detallado del proyecto.\n\nAviso legal completo en el menú Ayuda → Aviso Legal."
+        about_text = "evaPr v0.700.1.2\nGPL3\nDiagramador de Planos Electricos para Linux.\nHecho por etovive\nMejorado por Luka\n\n✓ Formato .ecad\n✓ Exportación PDF\n✓ Líneas consistentes\n\nAgradezco los aportes y pull requests de la comunidad,\npero no puedo brindar soporte técnico ni garantía.\nEl proyecto se comparte para quien desee colaborar.\n\nNota Legal: Las dimensiones y recomendaciones de evaPR son referenciales. La validación final de cálculos y componentes debe ser realizada por el profesional eléctrico responsable. La herramienta no sustituye el diseño detallado del proyecto.\n\nAviso legal completo en el menú Ayuda → Aviso Legal."
 
         text_canvas = tk.Canvas(text_frame, highlightthickness=0, bd=0)
         text_scroll = tk.Scrollbar(text_frame, orient="vertical", command=text_canvas.yview)
@@ -9427,6 +9453,7 @@ class PlanoElectrico:
     # FIN MÉTODOS DE SIMULACIÓN
 
 if __name__ == "__main__":
+    _set_windows_app_user_model_id()
     root = tk.Tk(className="evaPr")
     root.title("evaPr ⚡ Diagramador ELECTRICO")
     root.withdraw()  # Ocultar mientras el splash está activo

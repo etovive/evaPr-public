@@ -10,7 +10,9 @@ REM    - Python 3.10 o superior
 REM    - NSIS 3.x con "makensis" en el PATH
 REM
 REM  Usa requirements-lock.txt (versiones fijadas) para que el instalador que
-REM  distribuyes sea reproducible. Para instalar la app usa install.bat.
+REM  distribuyes sea reproducible. El resultado (dist_installer\evaPr-Setup-*.exe)
+REM  es el unico archivo que hay que repartir: instala la app sin necesitar
+REM  Python.
 REM
 REM  Uso: doble clic en build_installer.bat
 REM ============================================================================
@@ -78,7 +80,7 @@ if errorlevel 1 (
 REM --- 1. Version de la app (leida de config/settings.py) --------------------
 set "APP_VER="
 for /f "tokens=2 delims==" %%v in ('findstr /b /c:"APP_VERSION =" "%APP_DIR%config\settings.py"') do set "APP_VER=%%~v"
-if not defined APP_VER set "APP_VER=0.694"
+if not defined APP_VER set "APP_VER=0.700.1.2"
 
 echo [INFO] Version detectada: %APP_VER%
 echo.

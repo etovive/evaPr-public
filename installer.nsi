@@ -8,7 +8,7 @@
 ;  Uso manual:  makensis installer.nsi
 ;
 ;  Parámetros de compilación opcionales:
-;    makensis -DSRC_DIR=dist -DAPP_VER=0.694 installer.nsi
+;    makensis -DSRC_DIR=dist -DAPP_VER=0.700.1.2 installer.nsi
 ;
 ;  IMPORTANTE
 ;  ----------
@@ -29,7 +29,7 @@ RequestExecutionLevel user
 ; APP_VER lo sobrescriben build_installer.bat y build_installer_linux.sh con
 ; el valor de APP_VERSION en config/settings.py; el de aquí es solo un respaldo.
 !ifndef APP_VER
-  !define APP_VER "0.694"
+  !define APP_VER "0.700.1.2"
 !endif
 
 !ifndef SRC_DIR
@@ -53,9 +53,18 @@ RequestExecutionLevel user
 !define APP_EXE       "evaPr.exe"
 !define APP_ICON      "logo-evaPr.ico"
 !define APP_LOGO      "logo-evaPr.png"
+; Debe coincidir con el AppUserModelID que fija evaPr.py en runtime.
+!define APP_AUMI      "eduCAd.evaPr"
 
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
+; COM.nsh / Propkey.nsh (en Include\Win\, vienen con NSIS 3.x) permiten fijar el
+; AppUserModelID en los accesos directos usando el plugin System (incluido en
+; NSIS por defecto). Sin ese id Windows no puede anclar correctamente la app a
+; la barra de tareas. El id debe coincidir con el que fija evaPr.py en tiempo
+; de ejecución (_set_windows_app_user_model_id).
+!include "Win\COM.nsh"
+!include "Win\Propkey.nsh"
 
 !define MUI_ICON   "${SRC_DIR}\${APP_ICON}"
 !define MUI_UNICON "${SRC_DIR}\${APP_ICON}"
@@ -76,7 +85,9 @@ ShowInstDetails show
 ShowUninstDetails show
 
 ; ─── Información de versión (propiedades del .exe generado) ──────────────────
-VIProductVersion "${APP_VER}.0.0"
+; VIProductVersion exige exactamente 4 campos numéricos (X.X.X.X). Por eso
+; APP_VERSION en config/settings.py se escribe con 4 números (p. ej. 0.700.1.2).
+VIProductVersion "${APP_VER}"
 VIAddVersionKey "ProductName"     "${APP_NAME_FULL}"
 VIAddVersionKey "CompanyName"     "${APP_PUBLISHER}"
 VIAddVersionKey "FileDescription" "Diagramador de circuitos eléctricos industriales"
@@ -111,8 +122,63 @@ FunctionEnd
 
 Function .onInit
   SetOverwrite on
+  ; AppUserModelID del propio instalador (evita que su botón en la barra de
+  ; tareas se agrupe con otro proceso). El del desinstalador se fija en un.onInit.
+  System::Call 'Shell32::SetCurrentProcessExplicitAppUserModelID(w "${APP_AUMI}.Setup")'
   Call CloseRunningInstance
 FunctionEnd
+
+; ─── AppUserModelID de los accesos directos ──────────────────────────────────
+; Asocia el .lnk con el AppUserModelID de la aplicación (System.AppUserModel.ID)
+; para que Windows 7+ permita anclar la app y agrupe todas sus ventanas bajo el
+; mismo botón. Implementado con el plugin System (incluido en NSIS por defecto),
+; sin depender de plugins externos. Se puede usar varias veces (sin labels).
+!macro SetLnkAUMI _lnk _aumi
+  System::Store S
+  IntOp $0 0 - 1
+  IntOp $1 0 + 0
+  IntOp $2 0 + 0
+  IntOp $3 0 + 0
+  IntOp $4 0 + 0
+  IntOp $5 0 + 0
+  IntOp $6 0 + 0
+
+  !insertmacro ComHlpr_CreateInProcInstance ${CLSID_ShellLink} ${IID_IShellLink} r1 ".r0"
+  ${If} $0 = 0
+    ${IUnknown::QueryInterface} $1 '("${IID_IPersistFile}",.r2)i.r0'
+    ${If} $0 = 0
+      ${IPersistFile::Load} $2 "('${_lnk}', ${STGM_READWRITE})i.r0"
+      ${If} $0 = 0
+        ${IUnknown::QueryInterface} $1 '("${IID_IPropertyStore}",.r3)i.r0'
+        ${If} $0 = 0
+          System::Call '*${SYSSTRUCT_PROPERTYKEY}(${PKEY_AppUserModel_ID})p.r4'
+          StrLen $7 "${_aumi}"
+          IntOp $7 $7 + 1
+          IntOp $7 $7 * 2
+          System::Call "ole32::CoTaskMemAlloc(i $7)p.r6"
+          ${If} $6 P<> 0
+            StrLen $7 "${_aumi}"
+            IntOp $7 $7 + 1
+            System::Call '*$6(&w$7 "${_aumi}")'
+            System::Call '*${SYSSTRUCT_PROPVARIANT}(${VT_LPWSTR},,p r6)p.r5'
+            ${IPropertyStore::SetValue} $3 '($4,$5)i.r0'
+            ${IPropertyStore::Commit} $3 "i.r0"
+            ${If} $0 = 0
+              ${IPersistFile::Save} $2 '("${_lnk}",1)i.r0'
+            ${EndIf}
+            System::Call "ole32::CoTaskMemFree(p r6)"
+            System::Free $5
+          ${EndIf}
+          System::Free $4
+          ${IUnknown::Release} $3 ""
+        ${EndIf}
+        ${IUnknown::Release} $2 ""
+      ${EndIf}
+    ${EndIf}
+    ${IUnknown::Release} $1 ""
+  ${EndIf}
+  System::Store L
+!macroend
 
 ; ─── Secciones ───────────────────────────────────────────────────────────────
 Section "${APP_NAME_FULL}" SecArchivos
@@ -171,16 +237,18 @@ Section "${APP_NAME_FULL}" SecArchivos
   WriteRegStr HKCU "Software\${APP_NAME}" "InstallDir" "$INSTDIR"
 SectionEnd
 
-Section /o "Acceso directo en el Escritorio" SecEscritorio
+Section "Acceso directo en el Escritorio" SecEscritorio
   CreateDirectory "$SMPROGRAMS\${APP_NAME}"
   CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${APP_EXE}" "" \
                  "$INSTDIR\${APP_ICON}" "" "" "" "$INSTDIR"
+  !insertmacro SetLnkAUMI "$DESKTOP\${APP_NAME}.lnk" "${APP_AUMI}"
 SectionEnd
 
-Section /o "Acceso directo en el Menú de Inicio" SecInicio
+Section "Acceso directo en el Menú de Inicio" SecInicio
   CreateDirectory "$SMPROGRAMS\${APP_NAME}"
   CreateShortCut "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk" "$INSTDIR\${APP_EXE}" "" \
                  "$INSTDIR\${APP_ICON}" "" "" "" "$INSTDIR"
+  !insertmacro SetLnkAUMI "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk" "${APP_AUMI}"
   CreateShortCut "$SMPROGRAMS\${APP_NAME}\Desinstalar ${APP_NAME}.lnk" \
                  "$INSTDIR\Uninstall.exe" "" "$INSTDIR\${APP_ICON}"
 SectionEnd
@@ -223,6 +291,9 @@ Section "Uninstall"
   Delete "$INSTDIR\${APP_LOGO}"
   Delete "$INSTDIR\*.log"
   Delete "$INSTDIR\Uninstall.exe"
+  ; Restos de instalaciones antiguas hechas con install.bat
+  Delete "$INSTDIR\Uninstall.bat"
+  Delete "$INSTDIR\evaPr.pyw"
   RMDir   "$INSTDIR"
 
   DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"

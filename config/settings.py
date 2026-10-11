@@ -39,8 +39,8 @@ def _get_default_svg_path():
     docs = "Documents" if platform.system() == "Windows" else "Documentos"
     return str(Path.home() / docs / "evaPr" / "svgs")
 
-APP_VERSION = "0.700"
-APP_VERSION_LABEL = "v0.700"
+APP_VERSION = "0.700.1.2"
+APP_VERSION_LABEL = "v0.700.1.2"
 
 PAYPAL_DONATION_URL = "https://paypal.me/etovivePr"
 
@@ -104,7 +104,7 @@ DEFAULT_CONFIG = {
         "empresa": "",
         "direccion": "",
         "escala": "1:1",
-        "version": "0.700",
+        "version": "0.700.1.2",
         "formato": "A4",  # A4 o A3
         "pdf_template": ""  # Ruta y nombre de la plantilla .pte a usar
     },

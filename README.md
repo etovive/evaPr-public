@@ -1,6 +1,6 @@
 # evaPr - Diagramador de Circuitos Eléctricos Industriales
 
-![Versión 0.700](https://img.shields.io/badge/version-0.700-orange.svg)
+![Versión 0.700.1.2](https://img.shields.io/badge/version-0.700.1.2-orange.svg)
 ![Licencia GPL v3](https://img.shields.io/badge/license-GPL%20v3-blue.svg)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 ![Plataforma Linux/Windows](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-lightgrey.svg)
@@ -141,34 +141,25 @@ evaPr                      # o busca "eduCAd" en tu menú de aplicaciones
 > (`~/.local/share/evaPr/venv`), por eso el repositorio no se ensucia.
 > Si mueves o borras el repositorio, vuelve a ejecutar `./install.sh`.
 
-### Windows — doble clic
+### Windows — instalador (NSIS)
 
-Clona el repositorio y **doble clic en `install.bat`**. Crea un acceso directo
-en el escritorio e instala las dependencias que falten.
+En Windows se instala y se reparte con el instalador de NSIS: es **un solo
+archivo** (`dist_installer\evaPr-Setup-<versión>.exe`) que ya incluye todo
+(ejecutable + `svgs/` + `config/`) y **no necesita Python** en el equipo destino.
 
-### Si quieres hacerlo a mano
+Para generarlo (una vez, en Windows):
 
-```bash
-sudo apt install python3-tk libcairo2       # librerías del sistema
-python3 -m pip install -r requirements.txt   # dependencias de Python
-python3 evaPr.py                            # ejecutar
-```
+1. Instalar [NSIS 3.x](https://nsis.sourceforge.io/Main.html) para que
+   `makensis` quede en el PATH.
+2. Doble clic en `build_installer.bat`. Compila `evaPr.exe` con `evaPr_win.spec`
+   en `dist/`, empaqueta `svgs/` y `config/` **tal cual** y genera
+   `dist_installer/evaPr-Setup-<versión>.exe`.
 
-### Instalador para Windows (NSIS)
+Reparte ese `.exe`: quien lo ejecute instala la app con doble clic. NSIS es
+*cross-compiler* (el instalador se puede generar en Linux), pero `evaPr.exe`
+**no**: PyInstaller solo compila para el sistema operativo en el que se ejecuta.
 
-Para generar un instalador `.exe` que incluya todo (ejecutable + `svgs/` + `config/`).
-
-NSIS es *cross-compiler*: el instalador se puede generar en Linux, pero el
-ejecutable `evaPr.exe` **no** — PyInstaller solo compila para el sistema
-operativo en el que se ejecuta.
-
-**Opción A — todo en Windows (la más simple)**
-1. Instalar [NSIS 3.x](https://nsis.sourceforge.io/Main.html) (para que `makensis` quede en el PATH).
-2. Ejecutar `build_installer.bat` (doble clic). El script compila `evaPr.exe`
-   con `evaPr_win.spec` en `dist/`, empaqueta `svgs/` y `config/` **tal
-   cual** y genera `dist_installer/evaPr-Setup-<versión>.exe`.
-
-**Opción B — ejecutable en Windows, instalador en Linux**
+**Alternativa — ejecutable en Windows, instalador en Linux**
 1. En Windows, solo el paso de PyInstaller:
 ```bat
 python -m PyInstaller evaPr_win.spec --noconfirm --distpath dist --workpath build\evaPr_win
@@ -185,6 +176,8 @@ Detalles del instalador generado:
 - Se instala por usuario en `%LOCALAPPDATA%\Programs\evaPr` (no requiere
   permisos de administrador) e incluye accesos directos en Escritorio y Menú de
   Inicio, más el desinstalador en "Agregar o quitar programas".
+- Los accesos directos llevan el AppUserModelID `eduCAd.evaPr` (el mismo que
+  fija la app en tiempo de ejecución), para poder **anclar a la barra de tareas**.
 - `svgs/` y `config/` se entregan sin modificar: la aplicación los lee desde la
   carpeta del propio `.exe` (`utils.get_app_dir()`), por eso el instalador
   **no** los copia a `Documentos`.
@@ -199,6 +192,14 @@ Detalles del instalador generado:
 > automáticamente cualquier `.dll` que haya en esa carpeta. El runtime hook
 > `pyi_dll_path.py` se encarga de que esa carpeta se agregue al orden de
 > búsqueda de DLL.
+
+### Si quieres hacerlo a mano
+
+```bash
+sudo apt install python3-tk libcairo2       # librerías del sistema
+python3 -m pip install -r requirements.txt   # dependencias de Python
+python3 evaPr.py                            # ejecutar
+```
 
 
 ## 📖 Uso Básico

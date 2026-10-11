@@ -145,15 +145,16 @@ evaPr                      # o busca "eduCAd" en tu menú de aplicaciones
 
 En Windows se instala y se reparte con el instalador de NSIS: es **un solo
 archivo** (`dist_installer\evaPr-Setup-<versión>.exe`) que ya incluye todo
-(ejecutable + `svgs/` + `config/`) y **no necesita Python** en el equipo destino.
+(ejecutable + `svgs/` + `config/` + las DLLs de Cairo) y **no necesita Python
+ni GTK/Cairo** en el equipo destino.
 
 Para generarlo (una vez, en Windows):
 
 1. Instalar [NSIS 3.x](https://nsis.sourceforge.io/Main.html) para que
    `makensis` quede en el PATH.
 2. Doble clic en `build_installer.bat`. Compila `evaPr.exe` con `evaPr_win.spec`
-   en `dist/`, empaqueta `svgs/` y `config/` **tal cual** y genera
-   `dist_installer/evaPr-Setup-<versión>.exe`.
+   en `dist/`, empaqueta `svgs/` y `config/` **tal cual**, incorpora las DLLs de
+   Cairo (ver más abajo) y genera `dist_installer/evaPr-Setup-<versión>.exe`.
 
 Reparte ese `.exe`: quien lo ejecute instala la app con doble clic. NSIS es
 *cross-compiler* (el instalador se puede generar en Linux), pero `evaPr.exe`
@@ -186,12 +187,17 @@ Detalles del instalador generado:
 
 > **Nota sobre Cairo:** `cairosvg` necesita `libcairo-2.dll` en tiempo de
 > ejecución y PyInstaller no la empaqueta (cairocffi la carga de forma
-> dinámica). Si al probar el instalador los botones con SVG salen vacíos o
-> falla la exportación vectorial a PDF, copia `libcairo-2.dll` (y sus
-> dependencias) en `dist/` y vuelve a compilar: el `.nsi` incluye
-> automáticamente cualquier `.dll` que haya en esa carpeta. El runtime hook
-> `pyi_dll_path.py` se encarga de que esa carpeta se agregue al orden de
-> búsqueda de DLL.
+> dinámica). `build_installer.bat` ya lo resuelve solo: ejecuta
+> `bundle_cairo_dlls.py`, que localiza `libcairo-2.dll` en GTK3-Runtime, MSYS2
+> o el PATH, calcula toda su cadena de dependencias y las copia a `dist/`. El
+> `.nsi` incluye automáticamente cualquier `.dll` de esa carpeta y el runtime
+> hook `pyi_dll_path.py` la añade al orden de búsqueda de DLL. Resultado: el
+> instalador funciona en equipos **sin GTK ni Cairo** instalados.
+>
+> Si la máquina que compila no tiene `libcairo-2.dll`, instala
+> [GTK3-Runtime](https://github.com/tschoonj/GTK-for-Windows-Runtime-Installer),
+> indícala con la variable `CAIRO_DLL_DIR` o con
+> `python bundle_cairo_dlls.py --cairo-dir <ruta>`.
 
 ### Si quieres hacerlo a mano
 

@@ -14,7 +14,7 @@ from datetime import datetime
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from config.settings import DEFAULT_CONFIG, AppConstants, save_config
+from config.settings import DEFAULT_CONFIG, AppConstants, save_config, resolve_work_dir
 from utils.utility_functions import sort_bom_entries, sort_bom_references
 from ui.export_dialog import confirm_overwrite, show_export_success
 
@@ -2886,7 +2886,7 @@ class PdfExporter:
         filename = filedialog.asksaveasfilename(
             title="Exportar a PDF",
             defaultextension=".pdf",
-            initialdir=self.app.config.get("work_dir", str(Path.home() / "Documentos" / "Proyectos") if __import__("platform").system() != "Windows" else str(Path.home() / "Documents" / "Proyectos")),
+            initialdir=resolve_work_dir(self.app.config),
             initialfile=initial_name,
             filetypes=[("Archivos PDF", "*.pdf"), ("Todos los archivos", "*.*")],
             parent=self.app.root,

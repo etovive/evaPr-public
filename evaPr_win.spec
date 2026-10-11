@@ -1,7 +1,16 @@
-# -*- mode: python ; coding: utf-8 -*-
-# evaPr_win.spec — Spec de PyInstaller específico para Windows
-# Usa logo-evaPr.ico para el ícono del ejecutable .exe
+﻿# -*- mode: python ; coding: utf-8 -*-
+# evaPr_win.spec - Spec de PyInstaller especifico para Windows
+# Usa logo-evaPr.ico para el icono del ejecutable .exe
 # Las carpetas 'config' y 'svgs' se instalan JUNTO al ejecutable.
+#
+# Se compila en modo ONEDIR (carpeta), NO onefile. En onefile PyInstaller
+# descomprime y extrae TODO (~75 MB) a %TEMP%\_MEIxxxx en CADA arranque y
+# Windows Defender lo escanea, lo que hace el inicio lento (~2-3 s extra).
+# En onedir el ejecutable es pequeno y carga las librerias desde _internal\
+# sin extraer nada: el arranque es mucho mas rapido. El instalador NSIS ya
+# instala en una carpeta, asi que onedir encaja sin problemas.
+#
+# Salida:  dist\evaPr\evaPr.exe  +  dist\evaPr\_internal\  +  svgs\ y config\
 
 import shutil
 import os
@@ -51,15 +60,13 @@ pyz = PYZ(a.pure, compress=9)
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
     [],
+    exclude_binaries=True,
     name='evaPr',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,           # Strip puede romper binarios en Windows
-    upx=True,
+    upx=False,
     upx_exclude=[],
     console=False,         # Sin ventana de consola en Windows
     disable_windowed_traceback=False,
@@ -67,14 +74,27 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    # Usar .ico para Windows (mejor soporte de íconos en Explorer y barra de tareas)
+    # Usar .ico para Windows (mejor soporte de iconos en Explorer y barra de tareas)
     icon='logo-evaPr.ico',
     version_file=None,
 )
 
-# ─── Post-build: copiar carpetas externas junto al ejecutable ─────────────────
-# dist/svgs y dist/config deben estar al lado de dist/evaPr.exe
-_dist = DISTPATH
+# El runtime (Python, librerias, .pyd, DLLs empaquetadas, datos) va a la carpeta
+# "_internal" junto al .exe: la app los localiza via sys._MEIPASS.
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=False,
+    upx_exclude=[],
+    name='evaPr',
+)
+
+# --- Post-build: copiar carpetas externas junto al ejecutable ----------------
+# dist/evaPr/svgs y dist/evaPr/config deben estar al lado de dist/evaPr/evaPr.exe
+_dist = os.path.join(DISTPATH, 'evaPr')
 
 for _folder in ('svgs', 'config'):
     _src = os.path.join(SPECPATH, _folder)
@@ -83,20 +103,20 @@ for _folder in ('svgs', 'config'):
         if os.path.exists(_dst):
             shutil.rmtree(_dst)
         shutil.copytree(_src, _dst)
-        print(f"[post-build] Copiado: {_src} → {_dst}")
+        print(f"[post-build] Copiado: {_src} -> {_dst}")
 
 _logo_src = os.path.join(SPECPATH, 'logo-evaPr.png')
 _logo_dst = os.path.join(_dist, 'logo-evaPr.png')
 if os.path.exists(_logo_src) and not os.path.exists(_logo_dst):
     shutil.copy2(_logo_src, _logo_dst)
-    print(f"[post-build] Copiado: logo-evaPr.png → {_logo_dst}")
+    print(f"[post-build] Copiado: logo-evaPr.png -> {_logo_dst}")
 
-# El .ico vive en la raíz del repo (es la fuente para el acceso directo y el
-# icono de la ventana; PyInstaller además lo incrusta en el .exe)
+# El .ico vive en la raiz del repo (es la fuente para el acceso directo y el
+# icono de la ventana; PyInstaller ademas lo incrusta en el .exe)
 _ico_src = os.path.join(SPECPATH, 'logo-evaPr.ico')
 _ico_dst = os.path.join(_dist, 'logo-evaPr.ico')
 if os.path.exists(_ico_src) and not os.path.exists(_ico_dst):
     shutil.copy2(_ico_src, _ico_dst)
-    print(f"[post-build] Copiado: logo-evaPr.ico → {_ico_dst}")
+    print(f"[post-build] Copiado: logo-evaPr.ico -> {_ico_dst}")
 else:
-    print(f"[post-build] AVISO: no se encontró logo-evaPr.ico en {_ico_src}")
+    print(f"[post-build] AVISO: no se encontro logo-evaPr.ico en {_ico_src}")

@@ -100,7 +100,7 @@ from core.pdf_exporter import PdfExporter
 # Importaciones de módulos modularizados
 from ui.drawing_panel import DrawingPanel
 from ui.splash import SplashScreen
-from config.settings import load_config, save_config, DEFAULT_CONFIG, CONFIG_FILE
+from config.settings import load_config, save_config, DEFAULT_CONFIG, CONFIG_FILE, resolve_work_dir, default_work_dir
 from config.disclaimer import DISCLAIMER_FOOTER, DISCLAIMER_TEXT, DISCLAIMER_TITLE
 from handlers.event_utils import EventUtils
 from core.unified_line_system import get_unified_line_system
@@ -172,6 +172,9 @@ class PlanoElectrico:
         self.config = load_config()
         # Asegurar migración completa de configuración
         self.migrate_config()
+        # La carpeta de proyectos debe existir siempre: en ella se guardan los
+        # .ecad/.pdf/.dxf/CSV por defecto. Se crea al arrancar si falta.
+        resolve_work_dir(self.config, persist=True)
 
         project_name = self.config.get("pdf_config", {}).get("proyecto", "Nuevo Proyecto")
         if not project_name:
@@ -558,6 +561,7 @@ class PlanoElectrico:
         filename = filedialog.asksaveasfilename(
             defaultextension=".csv",
             initialfile=suggested_name,
+            initialdir=resolve_work_dir(self.config),
             filetypes=[("Archivos CSV", "*.csv"), ("Archivos de texto", "*.txt"), ("Todos los archivos", "*.*")],
             title="Exportar Lista de Materiales",
             parent=self.root,
@@ -624,6 +628,7 @@ class PlanoElectrico:
         filename = filedialog.asksaveasfilename(
             defaultextension=".csv",
             initialfile=suggested_name,
+            initialdir=resolve_work_dir(self.config),
             filetypes=[("Archivos CSV", "*.csv"), ("Archivos de texto", "*.txt"), ("Todos los archivos", "*.*")],
             title="Exportar Tabla de Cableado",
             parent=self.root,
@@ -5850,7 +5855,7 @@ class PlanoElectrico:
         filename = filedialog.asksaveasfilename(
             title="Guardar circuito",
             defaultextension=".ecad",
-            initialdir=self.config.get("work_dir", str(Path.home() / "Documentos" / "Proyectos")),
+            initialdir=resolve_work_dir(self.config),
             filetypes=[("Archivos ECAD", "*.ecad"), ("Todos los archivos", "*.*")],
             parent=self.root,
             confirmoverwrite=False,
@@ -5867,7 +5872,7 @@ class PlanoElectrico:
         self.stop_simulation_if_running("se abrió otro archivo")
         filename = filedialog.askopenfilename(
             title="Abrir circuito",
-            initialdir=self.config.get("work_dir", str(Path.home() / "Documentos" / "Proyectos")),
+            initialdir=resolve_work_dir(self.config),
             filetypes=[("Archivos ECAD", "*.ecad"), ("Archivos JSON", "*.json"), ("Todos los archivos", "*.*")],
             parent=self.root
         )
@@ -6082,7 +6087,7 @@ class PlanoElectrico:
         work_dir_frame.pack(anchor="w", fill="x", pady=(0, 5))
 
         work_dir_entry = tk.Entry(work_dir_frame, width=35, font=(AppConstants.UI_FONT_FAMILY, 9))
-        work_dir_entry.insert(0, temp_config.get("work_dir", str(Path.home() / "Documentos" / "Proyectos")))
+        work_dir_entry.insert(0, temp_config.get("work_dir") or default_work_dir())
         work_dir_entry.pack(side=tk.LEFT, padx=(0, 5))
 
         def browse_work_dir():
@@ -6305,6 +6310,9 @@ class PlanoElectrico:
                 pass
             self.config["grid_visible"] = grid_visible.get()
             self.config["work_dir"] = work_dir_entry.get()
+            # Crear la carpeta si no existe (o caer al valor por defecto si la
+            # ruta introducida no es válida) para que el guardado la respete.
+            self.config["work_dir"] = resolve_work_dir(self.config)
             self.config["svg_path"] = svg_entry.get()
             self.config["auto_conexion_enabled"] = auto_conexion_enabled.get()
             self.config["invertir_deteccion"] = invertir_deteccion.get()  # Nuevo: Invertir detección
@@ -9482,11 +9490,11 @@ if __name__ == "__main__":
         if splash_screen:
             splash_screen.close()
 
-    # Programar la muestra de la ventana ANTES de construir la interfaz: así los
-    # 1500 ms son un mínimo de splash que se solapan con el trabajo real, en vez
-    # de añadirse a él (antes, la ventana no aparecía hasta 1500 ms después de
-    # terminar de construir todo).
-    root.after(1500, show_main_window)
+    # Programar la muestra de la ventana ANTES de construir la interfaz: así el
+    # splash mínimo se solapa con el trabajo real, en vez de añadirse a él.
+    # Con el arranque ONEDIR ya no hace falta un splash largo: 800 ms bastan
+    # para evitar el parpadeo sin retrasar la entrada.
+    root.after(800, show_main_window)
 
     app = PlanoElectrico(root)
 

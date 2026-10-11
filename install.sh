@@ -164,7 +164,7 @@ if [ "$FORCE_BUILD" = "1" ]; then
         }
     fi
     "$BUILD_VENV/bin/python" -m pip install --quiet --upgrade pip >/dev/null 2>&1 || true
-    "$BUILD_VENV/bin/python" -m pip install --quiet -r "$APP_DIR/requirements-lock.txt" || {
+    "$BUILD_VENV/bin/python" -m pip install --quiet -r "$APP_DIR/requirements.txt" || {
         err "[ERROR] No se pudieron instalar las dependencias de compilación."
         exit 1
     }

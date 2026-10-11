@@ -39,6 +39,11 @@ def _get_default_svg_path():
     docs = "Documents" if platform.system() == "Windows" else "Documentos"
     return str(Path.home() / docs / "evaPr" / "svgs")
 
+def default_work_dir():
+    """Carpeta por defecto donde se guardan los proyectos (.ecad, .pdf, .dxf...)."""
+    docs = "Documents" if platform.system() == "Windows" else "Documentos"
+    return str(Path.home() / docs / "Proyectos")
+
 APP_VERSION = "0.700.1.2"
 APP_VERSION_LABEL = "v0.700.1.2"
 
@@ -85,7 +90,7 @@ DEFAULT_CONFIG = {
         "N": "GY",
         "PE": "GNYE"
     },
-    "work_dir": str(Path.home() / "Documents" / "Proyectos") if platform.system() == "Windows" else str(Path.home() / "Documentos" / "Proyectos"),
+    "work_dir": default_work_dir(),
     "svg_path": _get_default_svg_path(),
     "pdf_template": "",
     "window_width": 1024,
@@ -250,3 +255,35 @@ def save_config(config):
     except Exception as e:
         print(f"⚠️ Error guardando configuración: {e}")
         return False
+
+def resolve_work_dir(config, persist=False):
+    """Devuelve la carpeta de trabajo y la crea si no existe.
+
+    La carpeta de proyectos debe existir siempre para que los diálogos de
+    guardado (.ecad, .pdf, .dxf, CSV...) se abran en ella. Si la ruta
+    configurada no se puede crear, se recurre a la carpeta por defecto y, en
+    último caso, al directorio personal del usuario.
+    """
+    configured = str(config.get("work_dir", "") or "").strip()
+    candidates = []
+    if configured:
+        candidates.append(configured)
+    default = default_work_dir()
+    if default not in candidates:
+        candidates.append(default)
+    home = str(Path.home())
+    if home not in candidates:
+        candidates.append(home)
+
+    for candidate in candidates:
+        try:
+            Path(candidate).mkdir(parents=True, exist_ok=True)
+        except OSError:
+            continue
+        if config.get("work_dir") != candidate:
+            config["work_dir"] = candidate
+            if persist:
+                save_config(config)
+        return candidate
+    return home
+

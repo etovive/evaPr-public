@@ -185,6 +185,16 @@ Section "${APP_NAME_FULL}" SecArchivos
   SectionIn RO
   SetOutPath "$INSTDIR"
 
+  ; ── Limpieza de instalaciones antiguas (install.bat y versiones viejas) ──
+  ; Aquellas instalaciones dejaban evaPr.pyw / evaPr.py y sus accesos directos
+  ; apuntando a un ".pyw". El instalador actual usa exclusivamente evaPr.exe,
+  ; asi que se eliminan esos restos tanto al instalar como al actualizar.
+  Delete "$INSTDIR\evaPr.pyw"
+  Delete "$INSTDIR\evaPr.py"
+  Delete "$INSTDIR\Uninstall.bat"
+  Delete "$INSTDIR\launcher\evaPr.cmd"
+  RMDir  "$INSTDIR\launcher"
+
   ; ── Ejecutable y recursos ──
   File "${SRC_DIR}\${APP_EXE}"
   File "${SRC_DIR}\${APP_ICON}"
@@ -235,6 +245,14 @@ Section "${APP_NAME_FULL}" SecArchivos
                       "EstimatedSize"        ${APP_SIZE_KB}
 
   WriteRegStr HKCU "Software\${APP_NAME}" "InstallDir" "$INSTDIR"
+
+  ; ── Restos de instalaciones antiguas con install.bat ──
+  ; La version mas antigua de install.bat creaba el acceso directo con destino
+  ; "pythonw.exe" y argumento "evaPr.py" (un .py). Se borra siempre para que
+  ; nadie conserve ese acceso; las secciones de abajo (Escritorio / Menu de
+  ; Inicio) lo vuelven a crear apuntando a $INSTDIR\evaPr.exe.
+  Delete "$DESKTOP\${APP_NAME}.lnk"
+  Delete "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk"
 SectionEnd
 
 Section "Acceso directo en el Escritorio" SecEscritorio

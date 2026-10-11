@@ -11,7 +11,7 @@ from pathlib import Path
 # ezdxf y svgpathtools se importan bajo demanda: entre ambos arrastran numpy y
 # scipy y suman ~1 s, que se pagaba en cada arranque aunque el usuario nunca
 # exporte a DXF.  Ver _load_ezdxf().
-from config.settings import AppConstants
+from config.settings import AppConstants, resolve_work_dir
 from ui.export_dialog import confirm_overwrite, show_export_success
 
 _ezdxf = None
@@ -378,6 +378,7 @@ class DxfExporter:
         filename = filedialog.asksaveasfilename(
             title="Exportar DXF vectorial",
             initialfile=initial,
+            initialdir=resolve_work_dir(getattr(self.app, "config", {})),
             defaultextension=".dxf",
             filetypes=[("Archivo DXF", "*.dxf"), ("Todos los archivos", "*.*")],
             parent=getattr(self.app, "root", None),

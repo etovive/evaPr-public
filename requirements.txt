@@ -7,8 +7,9 @@
 # instala. Fijar aquí rompe la instalación en sistemas ajenos (p. ej. Pillow 12
 # no tiene ruedas para Python 3.9 y `pip install Pillow==12.3.0` falla).
 #
-# Para compilar de forma reproducible, usa el lock con versiones exactas:
-#     pip install -r requirements-lock.txt
+# Este es el ÚNICO archivo de dependencias: sirve tanto para instalar/ejecutar
+# la app como para compilar el ejecutable (build_installer.bat en Windows,
+# install.sh --build en Linux).
 #
 # Requisito: Python 3.10 o superior (las versiones actuales de Pillow, cairosvg
 # y ezdxf ya no soportan 3.9).

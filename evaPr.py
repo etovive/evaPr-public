@@ -198,10 +198,10 @@ class PlanoElectrico:
 
         # BINDINGS DE ATAJOS DE TECLADO
         # ATAJOS - EXACTAMENTE LO MISMO QUE LOS BOTONES
-        self.root.bind_all("<Control-h>", lambda e: self._center_vertically_with_indicator())
-        self.root.bind_all("<Control-j>", lambda e: self._distribute_vertically_with_indicator())
-        self.root.bind_all("<Control-k>", lambda e: self._distribute_horizontally_with_indicator())
-        self.root.bind_all("<Control-i>", lambda e: self._insert_point_with_indicator())
+        self.root.bind_all("<Control-h>", lambda e: self._simulate_ctrl_h())
+        self.root.bind_all("<Control-j>", lambda e: self._simulate_ctrl_j())
+        self.root.bind_all("<Control-k>", lambda e: self._simulate_ctrl_k())
+        self.root.bind_all("<Control-i>", lambda e: self._simulate_ctrl_i())
         self.root.bind_all("<F7>", lambda e: self.toggle_wire_numbering())
         # Control de la simulación con teclas de función (atajo global)
         # F5 arranca/reanuda, F6 detiene por completo. Son deliberadamente
@@ -796,6 +796,20 @@ class PlanoElectrico:
                     for bt in self.block_terminals
                 ]
 
+            # Serializar textos insertados (si no, al deshacer desaparecen)
+            if hasattr(self, 'text_components'):
+                state["texts"] = [
+                    t.to_dict() for t in self.text_components
+                    if hasattr(t, 'to_dict')
+                ]
+
+            # Serializar imágenes insertadas (mismo caso que los textos)
+            if hasattr(self, 'image_components'):
+                state["images"] = [
+                    img.to_dict() for img in self.image_components
+                    if hasattr(img, 'to_dict')
+                ]
+
             return state
         except Exception as e:
             return None
@@ -812,6 +826,8 @@ class PlanoElectrico:
             self.components.clear()
             self.connections.clear()
             self.text_components.clear()
+            if hasattr(self, 'image_components'):
+                self.image_components.clear()
             if hasattr(self, 'shape_manager') and self.shape_manager:
                 self.shape_manager.shapes.clear()
 
@@ -885,6 +901,26 @@ class PlanoElectrico:
                         self.shielding_manager.add_shielding(sh)
                     except Exception as e:
                         pass
+
+            # Restaurar textos insertados
+            if "texts" in state:
+                from models.component import TextComponent
+                for t_data in state["texts"]:
+                    try:
+                        self.text_components.append(
+                            TextComponent.from_dict(self.canvas, t_data))
+                    except Exception as e:
+                        _report_error("Apply State: Text", e)
+
+            # Restaurar imágenes insertadas
+            if "images" in state and hasattr(self, 'image_components'):
+                from models.component import ImageComponent
+                for img_data in state["images"]:
+                    try:
+                        self.image_components.append(
+                            ImageComponent.from_dict(self.canvas, img_data))
+                    except Exception as e:
+                        _report_error("Apply State: Image", e)
 
             # 7. Actualizar UI
             self.update_status_bar()
@@ -1929,6 +1965,9 @@ class PlanoElectrico:
             # Auto-selección para permitir movimiento inmediato
             text_comp.select()
             self.selected_component = text_comp
+
+            # Registrar el texto insertado en el historial de deshacer/rehacer
+            self.save_undo_checkpoint()
 
         except Exception as e:
             # Error colocando texto
@@ -6582,11 +6621,13 @@ class PlanoElectrico:
                 ("Ctrl+O", "Abrir archivo .ecad"),
                 ("Ctrl+S", "Guardar archivo .ecad"),
                 ("Ctrl+E", "Exportar PDF"),
+                ("Ctrl+T", "Exportar DXF"),
                 ("Ctrl+Q", "Salir"),
             ]),
             ("EDICIÓN", [
                 ("Ctrl+Z", "Deshacer (Historial de 15 estados)"),
                 ("Ctrl+Y", "Rehacer"),
+                ("Ctrl+U", "Seleccionar todo"),
                 ("Ctrl+R", "Rotar +90°"),
                 ("Ctrl+Shift+R", "Rotar -90°"),
                 ("Delete", "Borrar componente, conexión o punto de conexión"),
@@ -7567,6 +7608,57 @@ class PlanoElectrico:
                 pass
             self.selection_box_rect = None
 
+    def select_all(self):
+        """Selecciona todos los elementos editables de la hoja activa (Ctrl+U)."""
+        # No permitir selección en hojas no editables (Reportes, etc.)
+        try:
+            if hasattr(self, 'project'):
+                sheet = self.project.get_active_sheet()
+                if sheet and (not getattr(sheet, 'editable', True) or
+                              sheet.name in AppConstants.NON_EDITABLE_SHEETS):
+                    if hasattr(self, 'set_status'):
+                        self.set_status("Esta hoja no es editable", "orange")
+                    return
+        except Exception:
+            pass
+
+        self.selected_elements.clear()
+        if hasattr(self, 'selected_component'):
+            self.selected_component = None
+
+        # Componentes
+        for comp in self.components:
+            if hasattr(comp, 'selected'):
+                comp.selected = True
+            self.selected_elements.append(comp)
+
+        # Conexiones
+        for conn in self.connections:
+            if conn not in self.selected_elements:
+                self.selected_elements.append(conn)
+
+        # Shapes (formas geométricas), excluyendo fondos/estructuras fijas
+        if hasattr(self, 'shape_manager') and self.shape_manager:
+            for shape in getattr(self.shape_manager, 'shapes', []):
+                meta = getattr(shape, 'metadata', {})
+                if meta.get('locked') or meta.get('type') == 'cabinet_background':
+                    continue
+                self.selected_elements.append(shape)
+
+        # Textos insertados
+        for text_comp in getattr(self, 'text_components', []):
+            if text_comp in self.selected_elements:
+                continue
+            if hasattr(text_comp, 'selected'):
+                text_comp.selected = True
+            self.selected_elements.append(text_comp)
+
+        if hasattr(self, 'update_selection_indicators'):
+            self.update_selection_indicators()
+
+        if hasattr(self, 'set_status'):
+            self.set_status(f"✅ {len(self.selected_elements)} elementos seleccionados", "blue")
+
     def clear_selection(self):
         """Limpia toda la selección."""
         self.selected_elements.clear()
@@ -7595,6 +7687,22 @@ class PlanoElectrico:
                 handle_component()
             elif is_conn:
                 handle_connection()
+            elif isinstance(element, TextComponent):
+                # Textos insertados: recuadro discontinuo alrededor del texto
+                try:
+                    cid = getattr(element, 'canvas_id', None)
+                    if cid:
+                        bbox = self.canvas.bbox(cid)
+                        if bbox:
+                            self.canvas.create_rectangle(
+                                bbox[0] - 4, bbox[1] - 4, bbox[2] + 4, bbox[3] + 4,
+                                outline="#0080ff",
+                                width=2,
+                                dash=(5, 3),
+                                tags="selection_indicator"
+                            )
+                except Exception:
+                    pass
             elif hasattr(element, 'shape_type') and element.shape_type in {'circle', 'rect', 'square'}:
                 # GABINETE 2D: indicador visual para shapes alineables seleccionados
                 try:
@@ -9135,12 +9243,16 @@ class PlanoElectrico:
                 sheets_data.append(sheet_dict)
 
             # 3. Crear estructura del proyecto en formato version 2.0
+            # Cada proyecto guarda su propia configuración PDF (incluido su
+            # nombre) para que al cargarlo se respete tal cual se definió.
+            self.config.setdefault("pdf_config", {})["proyecto"] = self.project.name
             project_data = {
                 "version": "2.0",
                 "format_version": "2.0",
                 "created_by": "evaPr",
                 "created_date": datetime.now().isoformat(),
                 "project_name": self.project.name,
+                "pdf_config": dict(self.config.get("pdf_config", {})),
                 "sheets": sheets_data,
                 "active_sheet_index": self.project.active_sheet_index,
                 "canvas_config": {
@@ -9193,6 +9305,15 @@ class PlanoElectrico:
             print(f"📄 Cargando proyecto multi-hoja...")
 
             self.project.name = circuit_data.get("project_name", "Proyecto Cargado")
+
+            # Respetar el nombre y la configuración PDF propios del proyecto
+            # cargado: cada proyecto arrastra su cajetín, no el del anterior.
+            pdf_config = self.config.setdefault("pdf_config", {})
+            saved_pdf_config = circuit_data.get("pdf_config")
+            if isinstance(saved_pdf_config, dict):
+                pdf_config.update(saved_pdf_config)
+            pdf_config["proyecto"] = self.project.name
+
             self.project.sheets = []  # Limpiar hojas existentes
 
             # CENTRALIZADO: Reiniciar estado antes de cargar
@@ -9331,6 +9452,16 @@ class PlanoElectrico:
 
                 # La forma ya se agrega automáticamente al manager en _create_shape
                 created_shape = editor.selected_shape
+
+                # Marcar la forma como insertada por el usuario: el generador del
+                # Gabinete 2D regenera la hoja y debe preservar estas formas.
+                if created_shape is not None:
+                    try:
+                        if not hasattr(created_shape, 'metadata') or created_shape.metadata is None:
+                            created_shape.metadata = {}
+                        created_shape.metadata['user_shape'] = True
+                    except Exception:
+                        pass
 
                 if hasattr(self, 'set_status'):
                     shape_names = {

@@ -2379,6 +2379,7 @@ class EventHandler:
         - Ctrl+K: distribución horizontal
         - Ctrl+X: toggle invertir detección
         - Ctrl+A: toggle auto conexión
+        - Ctrl+U: seleccionar todo
         - Ctrl+G: toggle grid (snap to grid)
         - Ctrl++/Ctrl+=: zoom in (aumentar zoom 10%)
         - Ctrl+-: zoom out (disminuir zoom 10%)
@@ -2463,6 +2464,11 @@ class EventHandler:
                 # Ctrl+V: Pegar selección
                 self.app.paste_selection()
                 return
+
+            elif key == 'u':
+                # Ctrl+U: Seleccionar todo
+                if hasattr(self.app, 'select_all'):
+                    self.app.select_all()
 
             elif key == 'o':
                 # Ctrl+O: abrir archivo .ecad
@@ -5084,6 +5090,7 @@ class EventBinder:
         self.canvas.bind("<Control-e>", self.event_handler.on_key_press)  # Ctrl+E: exportar PDF
         self.canvas.bind("<Control-q>", self.event_handler.on_key_press)  # Ctrl+Q: salir
         self.canvas.bind("<Control-h>", self.event_handler.on_key_press)  # Ctrl+H: alineamiento vertical
+        self.canvas.bind("<Control-u>", self.event_handler.on_key_press)  # Ctrl+U: seleccionar todo
 
         # ATAJOS DE ZOOM - Bindings optimizados
         self.canvas.bind("<Control-plus>", self.event_handler.on_key_press)
@@ -5120,6 +5127,7 @@ class EventBinder:
             root.bind_all("<Control-s>", self.event_handler.on_key_press)  # Ctrl+S: guardar
             root.bind_all("<Control-e>", self.event_handler.on_key_press)  # Ctrl+E: exportar PDF
             root.bind_all("<Control-q>", self.event_handler.on_key_press)  # Ctrl+Q: salir
+            root.bind_all("<Control-u>", self.event_handler.on_key_press)  # Ctrl+U: seleccionar todo
 
             # ATAJOS DE ZOOM - Globales
             root.bind_all("<Control-plus>", self.event_handler.on_key_press)

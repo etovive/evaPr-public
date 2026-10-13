@@ -3831,13 +3831,32 @@ class Cabinet2DGenerator:
 
         target_sheet = app.project.sheets[cabinet_index]
 
-        # CRÍTICO FIX: Guardar shapes del usuario (DinRail y Canaleta) antes de limpiar
-        user_shapes = []  # DinRail y Canaleta dibujadas por el usuario
+        # CRÍTICO FIX: Guardar shapes del usuario antes de limpiar.
+        # Incluye DinRail/Canaleta (dibujadas con Ctrl+D/Ctrl+F) y cualquier forma
+        # geométrica insertada manualmente por el usuario (marcada con
+        # metadata['user_shape']). Sin esto, un círculo/rectángulo insertado en la
+        # Hoja de Gabinete 2D se perdía al cambiar de hoja o al guardar.
+        user_shapes = []
+        _seen_user_ids = set()
+        _sources = []
         if hasattr(target_sheet, 'live_shape_objects'):
-            from models.shape import DinRail, Canaleta
-            for s in target_sheet.live_shape_objects:
-                if isinstance(s, (DinRail, Canaleta)):
+            _sources.append(target_sheet.live_shape_objects)
+        # Si la hoja 2D es la activa, la lista viva del manager es la fuente de
+        # verdad (puede contener formas recién insertadas y aún sin sincronizar).
+        try:
+            if app.project.get_active_sheet() is target_sheet:
+                _sources.append(getattr(app.shape_manager, 'shapes', []))
+        except Exception:
+            pass
+        from models.shape import DinRail, Canaleta
+        for _src in _sources:
+            for s in _src:
+                if id(s) in _seen_user_ids:
+                    continue
+                meta = getattr(s, 'metadata', {}) or {}
+                if isinstance(s, (DinRail, Canaleta)) or meta.get('user_shape'):
                     user_shapes.append(s)
+                    _seen_user_ids.add(id(s))
 
         # Rescatar Block Terminals antes de limpiar el canvas
         saved_block_terminals = [

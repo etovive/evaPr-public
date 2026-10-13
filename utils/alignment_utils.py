@@ -39,11 +39,41 @@ def align_component_vertically(component, app):
             # Solo necesitamos la primera conexión -> salir
             break
 
+def _component_anchor_x(app, component, points):
+    """
+    Devuelve la X de referencia de un componente para la alineación vertical.
+
+    Usa el punto realmente conectado si existe. Si el componente no está
+    conectado, usa el centro horizontal de sus bornes (o del componente). Así
+    los componentes sin conexión también se alinean en lugar de ignorarse.
+    """
+    for connection in app.connections:
+        if connection.start_component == component:
+            idx = connection.start_point_idx
+        elif connection.end_component == component:
+            idx = connection.end_point_idx
+        else:
+            continue
+        if idx is not None and idx < len(points):
+            return points[idx][0]
+        break
+
+    if points:
+        xs = [p[0] for p in points]
+        return (min(xs) + max(xs)) / 2.0
+    try:
+        return component.x + component.size[0] / 2.0
+    except Exception:
+        return getattr(component, 'x', 0.0)
+
 def align_multiple_components_vertically(components, app):
     """
-    Alinea verticalmente múltiples componentes
-    usando SOLO el punto conectado de cada uno.
-    Ignora los puntos L1, L2, L3, N, PE no conectados para evitar superposición.
+    Alinea verticalmente múltiples componentes.
+
+    Para cada componente usa el punto realmente conectado si lo tiene; si no
+    está conectado, usa el centro horizontal de sus bornes. De esta forma los
+    componentes sin conexión (p. ej. una bobina que aún no se ha cableado)
+    también se alinean, en vez de dejarse intactos.
     """
     # Verificar que tenemos suficientes componentes válidos
     valid_components = [comp for comp in components
@@ -60,24 +90,9 @@ def align_multiple_components_vertically(components, app):
     if not reference_points:
         return
 
-    # Buscar el punto realmente conectado del componente de referencia
-    ref_connected_point_idx = None
-    for connection in app.connections:
-        if (connection.start_component == reference_component or
-            connection.end_component == reference_component):
-            if connection.start_component == reference_component:
-                ref_connected_point_idx = connection.start_point_idx
-            else:
-                ref_connected_point_idx = connection.end_point_idx
-            break
+    ref_x = _component_anchor_x(app, reference_component, reference_points)
 
-    if ref_connected_point_idx is None or ref_connected_point_idx >= len(reference_points):
-        return
-
-    # Usar el punto realmente conectado como referencia
-    ref_x, ref_y, _ = reference_points[ref_connected_point_idx]
-
-    # Alinear todos los demás componentes usando SOLO su punto conectado
+    # Alinear todos los demás componentes a la X de referencia
     for i, component in enumerate(valid_components):
         if i == 0:
             continue  # Saltar el componente de referencia
@@ -86,20 +101,9 @@ def align_multiple_components_vertically(components, app):
         if not points:
             continue
 
-        # Buscar el punto realmente conectado de este componente
-        comp_connected_point_idx = None
-        for connection in app.connections:
-            if (connection.start_component == component or
-                connection.end_component == component):
-                if connection.start_component == component:
-                    comp_connected_point_idx = connection.start_point_idx
-                else:
-                    comp_connected_point_idx = connection.end_point_idx
-                break
-
-        if comp_connected_point_idx is not None and comp_connected_point_idx < len(points):
-            comp_x, comp_y, _ = points[comp_connected_point_idx]
-            dx = ref_x - comp_x
+        comp_x = _component_anchor_x(app, component, points)
+        dx = ref_x - comp_x
+        if dx != 0:
             component.move(dx, 0)
 
     for component in valid_components:

@@ -616,6 +616,7 @@ class Ellipse:
         self.canvas_id = canvas_id
         self.selected = False
         self.shape_type = "ellipse"
+        self.metadata = {}
 
     def get_bbox(self) -> Tuple[float, float, float, float]:
         """Retorna las coordenadas del bounding box - IDÉNTICO AL ORIGINAL"""
@@ -659,7 +660,8 @@ class Ellipse:
             "radius_y": self.radius_y,
             "outline": getattr(self, 'outline', "#000000"),
             "outline_width": getattr(self, 'outline_width', 2),
-            "fill": getattr(self, 'fill', "")
+            "fill": getattr(self, 'fill', ""),
+            "metadata": getattr(self, 'metadata', {})
         }
 
     @classmethod
@@ -669,6 +671,7 @@ class Ellipse:
         ellipse.outline = data.get("outline", "#000000")
         ellipse.outline_width = data.get("outline_width", 2)
         ellipse.fill = data.get("fill", "")
+        ellipse.metadata = data.get("metadata", {})
         return ellipse
 
     def draw(self, canvas: tk.Canvas):
@@ -694,6 +697,7 @@ class Square:
         self.canvas_id = canvas_id
         self.selected = False
         self.shape_type = "square"
+        self.metadata = {}
 
     def get_bbox(self) -> Tuple[float, float, float, float]:
         """Retorna las coordenadas del bounding box - IDÉNTICO AL ORIGINAL"""
@@ -733,7 +737,8 @@ class Square:
             "side_length": self.side_length,
             "outline": getattr(self, 'outline', "#000000"),
             "outline_width": getattr(self, 'outline_width', 2),
-            "fill": getattr(self, 'fill', "")
+            "fill": getattr(self, 'fill', ""),
+            "metadata": getattr(self, 'metadata', {})
         }
 
     @classmethod
@@ -743,6 +748,7 @@ class Square:
         square.outline = data.get("outline", "#000000")
         square.outline_width = data.get("outline_width", 2)
         square.fill = data.get("fill", "")
+        square.metadata = data.get("metadata", {})
         return square
 
     def draw(self, canvas: tk.Canvas):
@@ -771,6 +777,7 @@ class Line:
         self.shape_type = "geom_line"
         self.color = "black"
         self.width = 1
+        self.metadata = {}
 
     def get_bbox(self) -> Tuple[float, float, float, float]:
         """Retorna las coordenadas del bounding box"""
@@ -803,7 +810,8 @@ class Line:
             "x2": self.x2,
             "y2": self.y2,
             "color": self.color,
-            "width": self.width
+            "width": self.width,
+            "metadata": getattr(self, 'metadata', {})
         }
 
     @classmethod
@@ -812,6 +820,7 @@ class Line:
         line = cls(data["x1"], data["y1"], data["x2"], data["y2"])
         line.color = data.get("color", "black")
         line.width = data.get("width", 1)
+        line.metadata = data.get("metadata", {})
         return line
 
     def draw(self, canvas: tk.Canvas):
@@ -1446,6 +1455,9 @@ class ShapeManager:
             shape = Line(x1, y1, x2, y2)
             shape.color = shape_data.get('color', 'black')
             shape.width = shape_data.get('width', 1)
+            if not hasattr(shape, 'metadata') or shape.metadata is None:
+                shape.metadata = {}
+            shape.metadata['user_shape'] = True
             self.shapes.append(shape)
             if self.canvas:
                 shape.draw(self.canvas)
@@ -1461,6 +1473,12 @@ class ShapeManager:
             shape.fill = incoming_fill if incoming_fill else shape_data.get('fill', 'lightgray')
         shape.outline = shape_data.get('outline', 'black')
         shape.outline_width = shape_data.get('outline_width', 2)
+
+        # Marcar como forma insertada por el usuario: el generador del
+        # Gabinete 2D debe preservarla al regenerar la hoja.
+        if not hasattr(shape, 'metadata') or shape.metadata is None:
+            shape.metadata = {}
+        shape.metadata['user_shape'] = True
 
         # FIX Z-ORDER: Riel DIN y Canaleta siempre al inicio (detrás de componentes)
         if shape_type in ["din_rail", "canaleta"]:

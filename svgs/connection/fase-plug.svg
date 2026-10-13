@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   viewBox="0 0 18 16"
+   id="svg1"
+   sodipodi:docname="fase-plug.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title1">Fase</title>
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="30.944444"
+     inkscape:cx="9.0000001"
+     inkscape:cy="7.9982048"
+     inkscape:window-width="1600"
+     inkscape:window-height="831"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <ellipse
+     transform="matrix(0,1,1,0,0,0)"
+     cx="8"
+     cy="4.7361"
+     rx="4.0141"
+     ry="3.7641"
+     fill="none"
+     stroke="#550022"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     id="ellipse1" />
+  <path
+     transform="matrix(0,1,1,0,0,0)"
+     fill="none"
+     stroke="#550022"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     id="ellipse1-5"
+     sodipodi:type="arc"
+     sodipodi:cx="8.0526991"
+     sodipodi:cy="6.0859799"
+     sodipodi:rx="5.2766252"
+     sodipodi:ry="4.3821712"
+     sodipodi:start="0.42666435"
+     sodipodi:end="2.7042619"
+     sodipodi:arc-type="arc"
+     d="M 12.856281,7.8994823 A 5.2766252,4.3821712 0 0 1 8.0808403,10.468089 5.2766252,4.3821712 0 0 1 3.2726815,7.94193"
+     style="stroke-width:1.22183"
+     sodipodi:open="true" />
+  <path
+     d="M 10.352455,7.935368 16.421868,8"
+     fill="none"
+     stroke="#550022"
+     stroke-linecap="square"
+     stroke-width=".52"
+     id="path1"
+     style="stroke-width:1;stroke-dasharray:none"
+     sodipodi:nodetypes="cc" />
+  <circle
+     transform="matrix(0,1,1,0,0,0)"
+     cx="8"
+     cy="17.332315"
+     r="0.5"
+     fill="#808080"
+     id="circle1" />
+  <metadata
+     id="metadata1">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>Fase</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+</svg>

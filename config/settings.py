@@ -101,6 +101,7 @@ DEFAULT_CONFIG = {
     "snap_to_grid_enabled": False,
     "enable_move_connections": True,
     "guide_lines_enabled": True,  # Activar por defecto para testing
+    "show_sheet_frame": True,  # Marco rojo con el límite exportable de la hoja (solo visual)
     "pdf_config": {
         "proyecto": "",
         "dibujado_por": "",

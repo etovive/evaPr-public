@@ -3656,6 +3656,9 @@ class EventHandler:
         # 7. Punto de conexión seleccionado (para borrar con <delete>)
         if hasattr(self.app, 'clear_selected_connection_point'):
             self.app.clear_selected_connection_point()
+        # 8. Halos/resaltados de puntos de conexión (círculos amarillos de snap)
+        if hasattr(self.app, 'clear_connection_point_highlights'):
+            self.app.clear_connection_point_highlights()
 
     def _clear_selection_unless_click_inside_selected(self, x=None, y=None):
         """Limpia la selección a menos que el punto (x,y) esté dentro
@@ -3888,6 +3891,9 @@ class EventHandler:
             # Limpiar también el punto de conexión que pudiera haberse seleccionado
             if hasattr(self.app, 'clear_selected_connection_point'):
                 self.app.clear_selected_connection_point()
+            # Limpiar los halos amarillos de snap de puntos de conexión
+            if hasattr(self.app, 'clear_connection_point_highlights'):
+                self.app.clear_connection_point_highlights()
             if hasattr(self.app, 'set_status'):
                 self.app.set_status("Modo conexión cancelado", "black")
 
@@ -5144,3 +5150,6 @@ class EventBinder:
 
             root.bind_all("<F8>", self.event_handler.app.toggle_unifilar_tab)
             self.event_handler.app.toggle_unifilar_tab()
+
+            # F4: toggle "Habilitar mover lineas de conexion" (Configuracion > Avanzado)
+            root.bind_all("<F4>", self.event_handler.app.toggle_move_connections)

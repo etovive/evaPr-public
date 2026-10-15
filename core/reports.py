@@ -10,6 +10,7 @@ from models.shape import Rect, Circle, parse_seccion_canaleta
 from utils.utils import load_medidas_config, get_engineering_size
 from utils.utility_functions import sort_bom_entries, sort_bom_references
 from config.disclaimer import DISCLAIMER_FOOTER
+from config.settings import AppConstants
 
 _TEMP_RENDER_PATHS = []
 
@@ -22,6 +23,15 @@ def _cleanup_temp_renders():
     _TEMP_RENDER_PATHS.clear()
 
 atexit.register(_cleanup_temp_renders)
+
+def normalize_borner_svg(svg_file):
+    """Normaliza variantes del mismo borner.
+
+    ``borner-3-clavija.svg`` es la misma bornera de 3 polos con otro tipo de
+    conexión, así que se trata como ``borner-3.svg`` para no confundir la
+    detección de polos, la BOM, el unifilar ni el plano de bornes.
+    """
+    return re.sub(r'-clavija\b', '', str(svg_file or ''), flags=re.IGNORECASE)
 
 def _save_render_png(png_bytes):
     """Escribe un PNG renderizado y devuelve su ruta.
@@ -52,7 +62,11 @@ def _save_render_png(png_bytes):
 class BOMGenerator:
     """Generador de Lista de Materiales (Bill of Materials)"""
 
-    EXCLUDED_SHEETS = ["Lista de Materiales", "Plano Unifilar", "Hoja Unifilar"]
+    # Hojas derivadas/no editables (2D, unifilar, Lista de Materiales, Plano de
+    # Borner, Resumen de Gabinete, Tabla de Cableado, ...). Se reutiliza la lista
+    # central para no mantener copias desincronizadas. Los unifilares se filtran
+    # además por nombre (ver _collect_components_from_project).
+    EXCLUDED_SHEETS = list(AppConstants.CROSS_REF_EXCLUDED_SHEETS)
 
     def __init__(self, project):
         self.project = project
@@ -414,7 +428,7 @@ class BOMGenerator:
     @staticmethod
     def _get_borner_pole_count(svg_file):
         """Devuelve los polos de borner-N.svg; una bornera sin sufijo es 1 polo."""
-        match = re.search(r'borner-(\d+)', svg_file or '')
+        match = re.search(r'borner-(\d+)', normalize_borner_svg(svg_file))
         return int(match.group(1)) if match else 1
 
     def _get_ground_borner_pole_counts(self, project):
@@ -538,6 +552,7 @@ class BOMGenerator:
             return f"Repartidor de Cargas (Block Terminal) {filas}F × {bornas} bornas"
         # Borners (borneras/regletas de terminales)
         if 'borner' in svg_file:
+            svg_file = normalize_borner_svg(svg_file)
             # Detectar número de polos: borner-1.svg, borner-2.svg, etc.
             if 'borner-1' in svg_file:
                 return "Bornera 1 polo"
@@ -1196,17 +1211,45 @@ class CabinetSummaryGenerator:
 class BornerPlanGenerator:
     """Generador de Plano de Borner (Terminal Board Plan) - Usa SVG borner-pdf.svg"""
 
+    # Dispositivos externos que se agrupan individualmente por su referencia
+    # (igual que los motores): M1, K22, S3, ...
+    PER_NAME_TYPES = ('Motor', 'Electrovalvula', 'Presostato')
+
     def __init__(self, project):
         self.project = project
         self.borner_svg_path = "svgs/borner-pdf.svg"
 
-    def get_component_type(self, svg_file, name=""):
+    @staticmethod
+    def _element_description(elem):
+        """Descripción de un elemento, leyendo 'descripcion' y 'description'."""
+        ld = elem.get('label_data') if isinstance(elem, dict) else None
+        if not isinstance(ld, dict):
+            return ''
+        return ' '.join(str(ld.get(k, '') or '') for k in ('descripcion', 'description'))
+
+    def get_component_type(self, svg_file, name="", description=""):
         """
-        Determina el tipo de componente basado en el archivo SVG o nombre.
-        Por ahora solo considera motores y roller-switch.
+        Determina el tipo de componente basado en el archivo SVG, nombre o
+        descripción. Considera motores, roller-switch, electroválvulas
+        (solenoide externo) y presostatos/sensores de campo.
         """
         svg_lower = str(svg_file).lower()
         name_lower = str(name).lower()
+        desc_lower = str(description or '').lower()
+
+        # Electroválvulas / solenoides externos: aunque la referencia empiece por
+        # 'K' (p.ej. K22) son dispositivos de campo y llevan bornas propias. Se
+        # identifican por su símbolo para no confundirlas con bobinas de relé.
+        if any(k in svg_lower for k in ('selenoid', 'solenoid', 'electrovalv')):
+            return 'Electrovalvula'
+
+        # Presostatos (por descripción): son dispositivos externos con bornas
+        # propias aunque su símbolo sea un contacto NC/NO. NO incluir boyas/
+        # flotadores: esos usan 'roller-switch.svg' y deben conservar su
+        # agrupamiento Roller-Switch (no son presostatos).
+        if any(k in desc_lower for k in (
+                'presostato', 'pressostato', 'presion', 'pressure')):
+            return 'Presostato'
 
         # Mapeo simplificado: solo motores y roller-switch
         if 'motor' in svg_lower:
@@ -1370,9 +1413,14 @@ class BornerPlanGenerator:
         SALIDAS: conexiones que SALEN del borne (start_idx == borne)
         """
         all_borners = []
+        excluded_sheets = set(AppConstants.CROSS_REF_EXCLUDED_SHEETS)
 
         for sheet_idx, sheet in enumerate(project.sheets):
-            if sheet.name == "Plano de Borner":
+            # Excluir hojas derivadas/informes (Plano de Borner, Lista de Materiales,
+            # unifilares, 2D, ...). Sin esto, las bornas dibujadas en el unifilar se
+            # vuelven a recoger (p.ej. X1:1..X1:3) y aparecen duplicadas en un grupo
+            # genérico aunque ya estén en el grupo correcto (M1).
+            if sheet.name in excluded_sheets or 'unifilar' in sheet.name.lower():
                 continue
 
             for comp_idx, elem in enumerate(sheet.elements):
@@ -1416,7 +1464,8 @@ class BornerPlanGenerator:
                                                 'punto': label_punto,
                                                 'borner_punto': conn.get('end_point_idx', 0),  # Punto de conexión en el borner
                                                 'color': line_color,
-                                                'tipo': start_elem.get('svg_file', '')
+                                                'tipo': start_elem.get('svg_file', ''),
+                                                'desc': self._element_description(start_elem)
                                             }
                                             borner['entradas'].append(entrada)
 
@@ -1431,7 +1480,8 @@ class BornerPlanGenerator:
                                                 'punto': label_punto,
                                                 'borner_punto': conn.get('start_point_idx', 0),  # Punto de conexión en el borner
                                                 'color': line_color,
-                                                'tipo': end_elem.get('svg_file', '')
+                                                'tipo': end_elem.get('svg_file', ''),
+                                                'desc': self._element_description(end_elem)
                                             }
                                             borner['salidas'].append(salida)
 
@@ -1462,6 +1512,7 @@ class BornerPlanGenerator:
 
     def _extract_num_poles(self, svg_file):
         """Extrae el número de polos del nombre del archivo SVG"""
+        svg_file = normalize_borner_svg(svg_file)
         if 'borner-1' in svg_file:
             return 1
         elif 'borner-2' in svg_file:
@@ -1496,17 +1547,18 @@ class BornerPlanGenerator:
         for borner in borners:
             connected_components = []
             for salida in borner['salidas']:
-                comp_type = self.get_component_type(salida['tipo'], salida['nombre'])
+                comp_type = self.get_component_type(salida['tipo'], salida['nombre'], salida.get('desc', ''))
                 connected_components.append((comp_type, salida['nombre'], 'salida'))
             for entrada in borner['entradas']:
-                comp_type = self.get_component_type(entrada['tipo'], entrada['nombre'])
+                comp_type = self.get_component_type(entrada['tipo'], entrada['nombre'], entrada.get('desc', ''))
                 connected_components.append((comp_type, entrada['nombre'], 'entrada'))
 
             borner['connected_components'] = connected_components
 
             # Clasificar el borne determinando a qué componente pertenece realmente
-            # (Prioridad: Motor -> Roller-Switch -> Other)
+            # (Prioridad: Motor -> dispositivos por-referencia -> Roller-Switch -> Other)
             motor_connection = None
+            per_name_connection = None
             roller_connections = []
             other_connection = None
 
@@ -1514,6 +1566,9 @@ class BornerPlanGenerator:
                 if comp_type == 'Motor':
                     motor_connection = (comp_type, comp_name)
                     break # Motor toma precedencia total y absoluta
+                elif comp_type in self.PER_NAME_TYPES:
+                    if per_name_connection is None:
+                        per_name_connection = (comp_type, comp_name)
                 elif comp_type == 'Roller-Switch':
                     if comp_name not in roller_connections:
                         roller_connections.append(comp_name)
@@ -1525,6 +1580,10 @@ class BornerPlanGenerator:
             if motor_connection:
                 borner['group_type'] = 'Motor'
                 borner['group_target'] = [motor_connection[1]] # ej: ['M1']
+            elif per_name_connection:
+                # Electroválvulas, presostatos, ...: agrupados por referencia (K22, S3)
+                borner['group_type'] = per_name_connection[0]
+                borner['group_target'] = [per_name_connection[1]]
             elif roller_connections:
                 borner['group_type'] = 'Roller-Switch'
                 borner['group_target'] = roller_connections # ej: ['SW1', 'SW2']
@@ -1545,11 +1604,12 @@ class BornerPlanGenerator:
         # 2. Agrupar los borners completos en clusters
         clusters = {}
         for borner in borners:
-            if borner['group_type'] == 'Motor':
-                # Agrupado individual estricto por nombre de Motor
-                root = f"Motor_{borner['group_target'][0]}"
+            if borner['group_type'] in self.PER_NAME_TYPES:
+                # Agrupado individual estricto por referencia (M1, K22, S3, ...),
+                # igual que los motores.
+                root = f"{borner['group_type']}_{borner['group_target'][0]}"
                 if root not in clusters:
-                    clusters[root] = {'borners': [], 'comp_names': set(), 'comp_type': 'Motor'}
+                    clusters[root] = {'borners': [], 'comp_names': set(), 'comp_type': borner['group_type']}
                 clusters[root]['borners'].append(borner)
                 clusters[root]['comp_names'].add(borner['group_target'][0])
 
@@ -1592,8 +1652,10 @@ class BornerPlanGenerator:
             comp_names = sorted(list(cluster_data['comp_names']))
             comp_type = cluster_data['comp_type']
 
-            if comp_type == "Motor":
-                component_type = "Motor"
+            if comp_type in self.PER_NAME_TYPES:
+                # Motores, electroválvulas, presostatos, ...: una entrada por
+                # referencia del dispositivo.
+                component_type = comp_type
                 component_name = comp_names[0]
                 group_key = component_name
             elif comp_type == "Roller-Switch":
@@ -1654,7 +1716,7 @@ class BornerPlanGenerator:
             #    puede existir en el cluster un borne de 1 polo también llamado "X1"
             #    (el componente padre sin expandir), produciendo "X1, X1:1, X1:2, …".
             #    El "X1" suelto es redundante y debe eliminarse.
-            if cluster_data.get('comp_type') == 'Motor':
+            if cluster_data.get('comp_type') in self.PER_NAME_TYPES:
                 # Paso A: recopilar todos los prefijos que tienen hijos expandidos
                 # Un polo expandido tiene el formato "PREFIJO:N" (contiene ':')
                 prefijos_expandidos = set()
@@ -1783,12 +1845,18 @@ class BornerPlanGenerator:
 
             borners = grouped_borners[group_key]
 
-            # Determinar el tipo y label del componente para este grupo
-            # Para motores, group_key es el nombre específico (M1, M2), para otros es el tipo
-            is_motor_group = any(b.get('component_type') == "Motor" for b in borners if b.get('component_type'))
-            if is_motor_group:
-                component_type = "Motor"
-                component_label = group_key  # Nombre específico como M1
+            # Determinar el tipo y label del componente para este grupo.
+            # Motores y electroválvulas se agrupan por nombre específico (M1, K22),
+            # por lo que group_key YA es el nombre; el resto usa el tipo como label.
+            group_component_type = None
+            for b in borners:
+                ct = b.get('component_type')
+                if ct in ("Motor", "Electrovalvula"):
+                    group_component_type = ct
+                    break
+            if group_component_type:
+                component_type = group_component_type
+                component_label = group_key
             else:
                 component_type = group_key  # Tipo como Roller-Switch
                 component_label = group_key  # Label como Roller-Switch
@@ -2096,6 +2164,66 @@ class BornerPlanGenerator:
                         color=text_color
                     )
                     app.text_components.append(comp_name)
+
+        elif 'electrovalv' in type_lower or 'selenoid' in type_lower or 'solenoid' in type_lower:
+            # Electroválvula / solenoide externo: bobina con referencia (K22, ...)
+            from models.shape import Rect
+            width = 46
+            height = 28
+            coil_rect = Rect(x, y, width, height)
+            coil_rect.outline = line_color
+            coil_rect.outline_width = 2
+            app.shape_manager.shapes.append(coil_rect)
+            coil_rect.draw(app.canvas)
+
+            # Símbolo de solenoide dentro del rectángulo
+            solenoid_label = TextComponent(
+                app.canvas,
+                "YV",
+                10,
+                x, y,
+                color=text_color
+            )
+            app.text_components.append(solenoid_label)
+
+            # Referencia del dispositivo debajo (K22, K23, ...)
+            comp_name = TextComponent(
+                app.canvas,
+                component_label,
+                11,
+                x, y + height/2 + 15,
+                color=text_color
+            )
+            app.text_components.append(comp_name)
+
+        elif 'presostato' in type_lower or 'pressostato' in type_lower or 'sensor' in type_lower:
+            # Presostato / sensor de campo: contacto con su referencia (S3, ...)
+            from models.shape import Rect
+            width = 44
+            height = 24
+            sensor_rect = Rect(x, y, width, height)
+            sensor_rect.outline = line_color
+            sensor_rect.outline_width = 2
+            app.shape_manager.shapes.append(sensor_rect)
+            sensor_rect.draw(app.canvas)
+
+            symbol_label = TextComponent(
+                app.canvas,
+                "PS",
+                10,
+                x, y,
+                color=text_color
+            )
+            app.text_components.append(symbol_label)
+
+            comp_name = TextComponent(
+                app.canvas,
+                component_label,
+                11,
+                x, y + height/2 + 15,
+                color=text_color
+            )
+            app.text_components.append(comp_name)
 
         else:
             # Componente genérico: rectángulo con nombre
@@ -2652,6 +2780,9 @@ class UnifilarGenerator:
         "borner-3.svg": ("borner-1.svg", "Connection"),
         "borner-2.svg": ("borner-1.svg", "Connection"),
         "borner-4.svg": ("borner-1.svg", "Connection"),
+        # Borneras con conexión tipo clavija: su símbolo unifilar propio.
+        "borner-3-clavija.svg": ("borner-clavija.svg", "unifilar"),
+        "borner-1-clavija.svg": ("borner-clavija.svg", "unifilar"),
     }
 
     def __init__(self, project):
@@ -4066,15 +4197,28 @@ class Cabinet2DGenerator:
         # FILTRADO PROFESIONAL: Solo componentes permitidos (Ignorar motores, boyas, etc.)
         g_prot, g_man, g_ctrl, g_term, g_tapa = [], [], [], [], []
 
+        def _label_desc(ld, fallback=''):
+            """Texto descriptivo del componente.
+
+            La UI guarda la descripción en 'description' (ui/label_editors.py),
+            pero el código antiguo sólo leía 'descripcion', por lo que los
+            dispositivos externos (p. ej. un presostato) nunca eran detectados
+            y terminaban dibujados en la Hoja de Gabinete 2D.
+            """
+            if not isinstance(ld, dict):
+                return str(fallback or '').lower()
+            return ' '.join(str(ld.get(k, '') or '') for k in ('descripcion', 'description')).lower()
+
         for key, c in unique_components.items():
             if isinstance(c, dict):
                 cat, svg = str(c.get('category','')).lower(), str(c.get('svg_file','')).lower()
-                name = (c.get('label_data') or {}).get('name', '??').lower()
-                desc = str((c.get('label_data') or {}).get('descripcion', '')).lower()
+                name = str((c.get('label_data') or {}).get('name', '??')).lower()
+                desc = _label_desc(c.get('label_data'))
             else:
+                _ld = getattr(c, 'label_data', {})
                 cat, svg = str(getattr(c, 'category', '')).lower(), str(getattr(c, 'svg_file', '')).lower()
-                name = str(getattr(c, 'label_data', {}).get('name', '??') if isinstance(getattr(c, 'label_data', {}), dict) else getattr(c, 'name', '??')).lower()
-                desc = str(getattr(c, 'label_data', {}).get('descripcion', '') if isinstance(getattr(c, 'label_data', {}), dict) else getattr(c, 'name', '')).lower()
+                name = str(_ld.get('name', getattr(c, 'name', '??')) if isinstance(_ld, dict) else getattr(c, 'name', '??')).lower()
+                desc = _label_desc(_ld, getattr(c, 'name', ''))
 
             # Recuperar el conteo de polos (si no, asumimos 1)
             pole_count = tag_counts.get(name.upper(), 1) if name != '??' else 1
@@ -4112,7 +4256,9 @@ class Cabinet2DGenerator:
                 any(
                     x in cat or x in svg or x in name or x in desc for x in [
                         'motor', 'boya', 'solenoide', 'selenoid', 'sensor', 'presostato',
-                        'flotador', 'roller', 'external', 'externo', 'conxn', 'dot', 'nodo', 'empalme'
+                        'pressostato', 'presion', 'pressure', 'flow-switch', 'caudal',
+                        'nivel', 'level', 'flotador', 'roller', 'external', 'externo',
+                        'conxn', 'dot', 'nodo', 'empalme'
                     ]
                 ) or svg.endswith('selenoid-coil.svg')
             )

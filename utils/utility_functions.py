@@ -146,19 +146,40 @@ def adapt_color_for_display(color, canvas_bg=None):
     else:
         return _COLOR_MAP_FROM_DARK.get(color, color)
 
+def _bom_name_sort_key(name):
+    """Clave de orden natural para una referencia (K1 < K2 < K10)."""
+    s = str(name or "")
+    digits = ''.join(ch for ch in s if ch.isdigit())
+    prefix = s[0] if s else ""
+    try:
+        number = int(digits) if digits else 0
+    except ValueError:
+        number = 0
+    return (prefix, number, s)
+
 def sort_bom_entries(grouped_data):
     """
-    Ordena las claves de un BOM agrupado por (descripción, especificaciones).
+    Ordena las claves de un BOM agrupado por (descripción, especificaciones)
+    según las REFERENCIAS de cada grupo (no por la descripción).
     Lógica compartida entre BOMGenerator (reports.py) y PdfExporter (pdf_exporter.py).
 
     Args:
         grouped_data: dict { (desc, specs): [refs...] }
 
     Returns:
-        list: claves ordenadas por (str(desc), str(specs)).
+        list: claves ordenadas por la referencia natural más baja del grupo,
+              con (descripción, especificaciones) como desempate.
     """
     valid_keys = [k for k in grouped_data.keys() if k[0] or k[1]]
-    return sorted(valid_keys, key=lambda k: (str(k[0]), str(k[1])))
+
+    def _group_key(k):
+        names = grouped_data.get(k) or []
+        if names:
+            first = min(names, key=_bom_name_sort_key)
+            return (_bom_name_sort_key(first), str(k[0]), str(k[1]))
+        return (("", 0, ""), str(k[0]), str(k[1]))
+
+    return sorted(valid_keys, key=_group_key)
 
 def sort_bom_references(names):
     """
@@ -171,6 +192,6 @@ def sort_bom_references(names):
         list: nueva lista ordenada (conserva la original).
     """
     try:
-        return sorted(names, key=lambda x: (x[0], int(''.join(filter(str.isdigit, x))) if any(char.isdigit() for char in x) else 0))
+        return sorted(names, key=_bom_name_sort_key)
     except Exception:
         return sorted(names)

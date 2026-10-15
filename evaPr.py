@@ -339,6 +339,10 @@ class PlanoElectrico:
             self.canvas.world_to_screen = lambda wx, wy: (int(wx * self.canvas.zoom_level - self.canvas.canvasx(0)), int(wy * self.canvas.zoom_level - self.canvas.canvasy(0)))
 
         self.canvas.pack(fill="both", expand=True)
+        # Redibujar el marco de límites cuando cambia el tamaño visible del
+        # canvas (el exportador PDF usa ese tamaño como área de la hoja).
+        self._frame_resize_job = None
+        self.canvas.bind("<Configure>", self._on_canvas_configure_frame, add="+")
         # Canvas A3 fijo - usando tk.Canvas nativo
         # Flags para depuración del crosshair (usa color visible y mensaje una vez)
 
@@ -927,6 +931,9 @@ class PlanoElectrico:
             for comp in self.components:
                 comp.draw_connection_points()
 
+            # Redibujar el marco rojo de límites (delete("all") lo eliminó)
+            self.draw_sheet_frame()
+
         finally:
             self._undo_block_save = False
 
@@ -1156,6 +1163,47 @@ class PlanoElectrico:
             from config.settings import save_config
             save_config(self.config)
 
+    def draw_sheet_frame(self):
+        """Dibuja un marco rojo con los límites de la hoja (lienzo) actual.
+
+        GUÍA PURAMENTE VISUAL: no interviene en la selección, el movimiento, el
+        borrado, el copiado/pegado ni la exportación (ver la lista de tags
+        decorativos en el exportador PDF). Se recalcula al cambiar de zoom, de
+        hoja o al modificar la configuración.
+        """
+        # Eliminar el marco previo (p. ej. al cambiar de zoom o de hoja)
+        try:
+            self.canvas.delete("sheet_frame")
+        except Exception:
+            pass
+
+        if not self.config.get("show_sheet_frame", True):
+            return
+
+        try:
+            if self.canvas.winfo_width() <= 1 or self.canvas.winfo_height() <= 1:
+                return
+            exporter = getattr(self, 'pdf_exporter', None)
+            if exporter is None:
+                return
+            # Región del lienzo que realmente aparece en la página PDF, calculada
+            # con la misma transformación del exportador: misma proporción que
+            # la página y mismo tamaño que la exportación real.
+            x0, y0, x1, y1 = exporter.get_page_world_region()
+            zoom = float(getattr(self.canvas, 'zoom_level', 1.0) or 1.0)
+            self.canvas.create_rectangle(
+                x0 * zoom, y0 * zoom, x1 * zoom, y1 * zoom,
+                outline="#ff0000", width=2, dash=(8, 4),
+                tags="sheet_frame"
+            )
+            # Mantenerlo visible por encima del resto de elementos de dibujo
+            try:
+                self.canvas.tag_raise("sheet_frame")
+            except Exception:
+                pass
+        except Exception:
+            pass
+
     def draw_grid(self, force=False):
         """Dibuja el grid de tamaño fijo en el fondo del lienzo.
 
@@ -1262,12 +1310,22 @@ class PlanoElectrico:
             except Exception:
                 pass
 
+    def _on_canvas_configure_frame(self, event):
+        """Redibuja el marco de límites al cambiar el tamaño del canvas."""
+        if getattr(self, '_frame_resize_job', None):
+            try:
+                self.root.after_cancel(self._frame_resize_job)
+            except Exception:
+                pass
+        self._frame_resize_job = self.root.after(150, self.draw_sheet_frame)
+
     def on_canvas_mapped(self, event):
         """Se ejecuta cuando el canvas es mapeado por primera vez"""
         if not self.grid_initialized:
             self.grid_initialized = True
             # Usar after para asegurar que el canvas tenga las dimensiones finales
             self.root.after(100, lambda: self.draw_grid(force=True))
+            self.root.after(120, self.draw_sheet_frame)
             # Canvas mapeado - programando dibujado del grid
 
     def ensure_grid_visible(self):
@@ -4001,6 +4059,20 @@ class PlanoElectrico:
                     self.notebook.add(tab_id)
                 break
 
+    def toggle_move_connections(self, event=None):
+        """F4: activa/desactiva 'Habilitar mover lineas de conexion' (Configuracion > Avanzado)."""
+        new_value = not bool(self.config.get("enable_move_connections", True))
+        self.config["enable_move_connections"] = new_value
+        if hasattr(self, 'enable_move_connections'):
+            try:
+                self.enable_move_connections.set(new_value)
+            except Exception:
+                pass
+        if hasattr(self, 'set_status'):
+            estado = "ACTIVADO" if new_value else "DESACTIVADO"
+            self.set_status(f"Mover lineas de conexion: {estado}", "blue")
+        return "break"
+
     def create_button_image(self, svg_file, size=(48, 48), category=""):
         """Usa sistema centralizado de renderizado SVG (svg_renderer.py)"""
         try:
@@ -4350,6 +4422,18 @@ class PlanoElectrico:
             if getattr(new_sheet, 'last_rendered_bg', None) != current_bg:
                 self.refresh_all_colors()
 
+            # Redibujar el marco rojo de límites de la hoja recién cargada
+            self.draw_sheet_frame()
+
+            # Devolver el foco al canvas: al seleccionar una hoja en el listado
+            # el foco quedaba en el Listbox, por lo que los atajos que dependen
+            # del canvas (Ctrl+C/Ctrl+V, etc.) no funcionaban tras cambiar de
+            # hoja y no se podía pegar en otra hoja.
+            try:
+                self.canvas.focus_set()
+            except Exception:
+                pass
+
     def _save_current_sheet_state(self, sheet):
         """Guarda los elementos actuales en el objeto Sheet."""
         # NOTA: En una implementación real, aquí deberíamos serializar los objetos
@@ -4684,6 +4768,9 @@ class PlanoElectrico:
         # CRÍTICO: Sincronizar self.shapes con self.shape_manager.shapes
         # Esto asegura que los shapes cargados estén disponibles para futura serialización
         self.shapes = self.shape_manager.shapes[:]
+
+        # Marco rojo de límites de hoja (guía visual, no se exporta)
+        self.draw_sheet_frame()
 
     def add_new_sheet(self, name=None):
         """Crea una nueva hoja y cambia a ella."""
@@ -5817,6 +5904,7 @@ class PlanoElectrico:
 
         # 8. Redibujar elementos base
         self.draw_grid(force=True)
+        self.draw_sheet_frame()
         if hasattr(self, 'update_info_bar'):
             self.update_info_bar()
 
@@ -6249,6 +6337,14 @@ class PlanoElectrico:
                                           font=(AppConstants.UI_FONT_FAMILY, 9))
         enable_move_check.pack(anchor="w")
 
+        # Marco rojo con el límite exportable de la hoja (solo guía visual)
+        show_sheet_frame = tk.BooleanVar(value=temp_config.get("show_sheet_frame", True))
+        show_sheet_frame_check = tk.Checkbutton(advanced_frame,
+                                               text="Mostrar limites del canvas",
+                                               variable=show_sheet_frame,
+                                               font=(AppConstants.UI_FONT_FAMILY, 9))
+        show_sheet_frame_check.pack(anchor="w")
+
         # COLORES DE CABLES (reflejados en el apantallamiento) - SECCIÓN SEPARADA en avanzado_frame
         color_label = tk.Label(
             avanzado_frame,
@@ -6369,6 +6465,7 @@ class PlanoElectrico:
                     saved[ckey] = var.get() or DEFAULT_CONFIG["cable_color_map"].get(ckey, "")
                 self.config["cable_color_map"] = saved
             self.config["enable_move_connections"] = enable_move_connections.get() # Mover líneas
+            self.config["show_sheet_frame"] = show_sheet_frame.get()  # Marco rojo límite de hoja
 
             self.auto_conexion_enabled.set(auto_conexion_enabled.get())  # Actualizar instancia
             self.invertir_deteccion.set(invertir_deteccion.get())  # Actualizar instancia invertir
@@ -6392,6 +6489,8 @@ class PlanoElectrico:
             self.grid_size = self.config["grid_size"]
             # Cambio manual de configuración: forzar redibujo del grid
             self.draw_grid(force=True)
+            # Reaplicar el marco rojo de límites de hoja según la nueva configuración
+            self.draw_sheet_frame()
 
             if hasattr(self, 'update_wire_numbers'):
                 self.update_wire_numbers()
@@ -7397,6 +7496,9 @@ class PlanoElectrico:
             if hasattr(_eh, '_redraw_block_terminals_after_zoom'):
                 self.root.after(10, _eh._redraw_block_terminals_after_zoom)
 
+        # Redibujar el marco rojo de límites (delete("all") lo eliminó)
+        self.draw_sheet_frame()
+
         self.save_undo_checkpoint()
 
     def _on_right_click(self, event):
@@ -7669,7 +7771,20 @@ class PlanoElectrico:
         self.canvas.delete("selection_indicator")
 
         for element in self.selected_elements:
-            def handle_component(): pass
+            def handle_component():
+                # Garantiza el marcado visual del componente. El círculo de
+                # selección se dibuja al pasar `selected` de False a True, por
+                # lo que si el componente ya estaba marcado y su círculo se
+                # perdió en un redibujado previo, quedaba seleccionado pero sin
+                # marca. Forzamos el estado y redibujamos siempre.
+                try:
+                    if hasattr(element, '_selected'):
+                        element._selected = True
+                    if hasattr(element, 'update_selection_visual'):
+                        element.update_selection_visual()
+                except Exception:
+                    pass
+
             def handle_connection():
                 for line_id in element.line_ids:
                     coords = self.canvas.coords(line_id)
@@ -7680,7 +7795,7 @@ class PlanoElectrico:
                             tags="selection_indicator"
                         )
 
-            is_comp = isinstance(element, Component)
+            is_comp = isinstance(element, Component) or hasattr(element, 'update_selection_visual')
             is_conn = hasattr(element, 'line_ids')
 
             if is_comp:
@@ -7786,6 +7901,12 @@ class PlanoElectrico:
             component.draw()
 
         self.update_cross_references()
+
+        # Mantener el marco rojo de límites por encima de los componentes
+        try:
+            self.canvas.tag_raise("sheet_frame")
+        except Exception:
+            pass
 
     def _is_report_sheet(self, sheet_name):
         """Verifica si una hoja es un reporte o plano especial que debe excluirse de lógica de diagramas."""

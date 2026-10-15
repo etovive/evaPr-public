@@ -78,6 +78,7 @@ class PdfExporter:
         if "bom" not in self._report_cache:
             from core.reports import BOMGenerator
 
+            self._flush_active_sheet()
             bom_gen = BOMGenerator(self.project)
             all_components = bom_gen._collect_components_from_project(self.project)
             grouped_data = bom_gen._group_data(all_components, project=self.project)
@@ -97,10 +98,26 @@ class PdfExporter:
         if "wiring" not in self._report_cache:
             from core.wiring_table_generator import WiringTableGenerator
 
+            self._flush_active_sheet()
             self._report_cache["wiring"] = WiringTableGenerator(
                 self.project
             ).get_wiring_data()
         return self._report_cache["wiring"]
+
+    def _flush_active_sheet(self):
+        """Vuelca las ediciones en vivo de la hoja activa a ``sheet.elements``.
+
+        Los informes (Lista de Materiales / Tabla de Cableado) se recolectan de
+        ``sheet.elements`` y la hoja activa solo se persiste al cambiar de hoja.
+        Sin este volcado, al exportar el informe se omite la hoja que el usuario
+        esta editando.
+        """
+        try:
+            active = self.project.get_active_sheet() if self.project else None
+            if active is not None and hasattr(self.app, "_save_current_sheet_state"):
+                self.app._save_current_sheet_state(active)
+        except Exception:
+            pass
 
     def _report_pages(self, kind, page_size, orientation):
         """Páginas físicas que ocupa una hoja de informe, sin recalcular los datos."""
@@ -306,6 +323,49 @@ class PdfExporter:
             return float(scale_text)
         except Exception:
             return 1.0
+
+    def get_page_world_region(self):
+        """Región del lienzo (en coordenadas de mundo) que cae dentro de la página PDF.
+
+        Replica la transformación del exportador (ver
+        `_generate_circuit_svg_content`) para la hoja estándar: la página
+        completa tiene la misma proporción que el PDF y depende del tamaño
+        visible actual del canvas, igual que en la exportación. Devuelve
+        (x0, y0, x1, y1). Sirve como guía visual para saber dónde se corta el
+        dibujo al exportar.
+        """
+        try:
+            pdf_config = self.config.get("pdf_config", DEFAULT_CONFIG["pdf_config"])
+        except Exception:
+            pdf_config = DEFAULT_CONFIG["pdf_config"]
+
+        page_format = "A3" if pdf_config.get("formato", "A4") == "A3" else "A4"
+        orientation = "horizontal" if pdf_config.get("orientacion", "vertical") == "horizontal" else "vertical"
+
+        width_pt, height_pt = self._get_page_dimensions(page_format, orientation)
+        margin_pt, cajin_height_pt, header_gap_pt, _canvas_default, content_scale = self._get_page_layout_metrics()
+        pdf_scale_ratio = self._get_pdf_scale_ratio(pdf_config)
+
+        canvas_width = self.canvas.winfo_width() or 800
+        canvas_height = self.canvas.winfo_height() or 600
+
+        available_width = width_pt - 2 * margin_pt
+        available_height = height_pt - 2 * margin_pt - cajin_height_pt
+
+        scale_x = available_width / canvas_width
+        scale_y = available_height / canvas_height
+        scale_factor = min(scale_x, scale_y) * content_scale * pdf_scale_ratio
+        if scale_factor <= 0:
+            return 0.0, 0.0, float(canvas_width), float(canvas_height)
+
+        offset_x = margin_pt + (available_width - canvas_width * scale_factor) / 2
+        offset_y = margin_pt + cajin_height_pt - header_gap_pt
+
+        x0 = (0 - offset_x) / scale_factor
+        y0 = (0 - offset_y) / scale_factor
+        x1 = (width_pt - offset_x) / scale_factor
+        y1 = (height_pt - offset_y) / scale_factor
+        return x0, y0, x1, y1
 
     def _generate_pdf(self, filename):
         """Genera el archivo PDF con marco técnico - TODAS LAS HOJAS"""
@@ -1893,7 +1953,7 @@ class PdfExporter:
 
             # Recorrer solo los elementos relevantes del canvas para encontrar "huérfanos"
             all_ids = set(self.canvas.find_all())
-            decorative_tags = ['grid', 'grid_line', 'crosshair', 'selection_rect', 'selection_circle', 'cross_ref']
+            decorative_tags = ['grid', 'grid_line', 'crosshair', 'selection_rect', 'selection_circle', 'cross_ref', 'sheet_frame']
             decorative_ids = set()
             for tag in decorative_tags:
                 try:

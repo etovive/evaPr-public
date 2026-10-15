@@ -2,11 +2,20 @@ import re
 import logging
 from models.component import TextComponent
 from models.shape import Rect
+from config.settings import AppConstants
 
 _log = logging.getLogger("evaPr.wiring_table")
 
 SHEET_NAME = "Tabla de Cableado"
-EXCLUDED_SHEETS = {"Lista de Materiales", "Resumen de Gabinete", "Plano de Borner", SHEET_NAME}
+# Reutiliza la lista central de hojas derivadas (2D, unifilar, Lista de
+# Materiales, Plano de Borner, Resumen de Gabinete, Tabla de Cableado) para
+# que la tabla de cableado no analice hojas que no son circuitos.
+EXCLUDED_SHEETS = set(AppConstants.CROSS_REF_EXCLUDED_SHEETS) | {SHEET_NAME}
+
+def _is_excluded_sheet(sheet):
+    """True si la hoja es un informe/derivado (no un circuito)."""
+    name = getattr(sheet, 'name', '') or ''
+    return name in EXCLUDED_SHEETS or 'unifilar' in name.lower()
 
 COLUMNS = [
     ("N° HILO",         95),
@@ -148,7 +157,7 @@ class WiringTableGenerator:
         seen           = set()
 
         for sh_idx, sheet in enumerate(self.project.sheets):
-            if sheet.name in EXCLUDED_SHEETS:
+            if _is_excluded_sheet(sheet):
                 continue
             elems = getattr(sheet, 'elements', [])
             conns = getattr(sheet, 'connections', [])
@@ -242,7 +251,7 @@ class WiringTableGenerator:
     def _build_global_signal_map(self):
         gmap = {}
         for sh_idx, sheet in enumerate(self.project.sheets):
-            if sheet.name in EXCLUDED_SHEETS: continue
+            if _is_excluded_sheet(sheet): continue
             for e_idx, elem in enumerate(getattr(sheet, 'elements', [])):
                 if elem.get('type') == 'text': continue
                 tag = _get_tag(elem)

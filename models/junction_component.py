@@ -52,6 +52,20 @@ class JunctionComponent:
             ConnectionPoint(0, 0, radius=0.5, orientation='S')   # Punto para línea saliente
         ]
 
+    @property
+    def selected(self):
+        return self._selected
+
+    @selected.setter
+    def selected(self, value):
+        # Igual que Component: al cambiar el estado se redibuja el círculo de
+        # selección. Sin esta propiedad, `elem.selected = False` creaba un
+        # atributo nuevo y `_selected` quedaba en True, por lo que los puntos de
+        # conexión (empalmes) no se deseleccionaban visualmente.
+        if self._selected != value:
+            self._selected = value
+            self.update_selection_visual()
+
     def draw(self):
         """
         Dibuja el componente de empalme (invisible, solo puntos de conexión).

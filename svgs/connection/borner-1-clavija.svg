@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   viewBox="0 0 11 24"
+   id="svg1"
+   sodipodi:docname="borner-1-clavija.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   width="11"
+   height="24"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title1">Borners 3 polos</title>
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="11.313709"
+     inkscape:cx="46.890016"
+     inkscape:cy="24.79293"
+     inkscape:window-width="1600"
+     inkscape:window-height="831"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1"
+     showguides="true" />
+  <ellipse
+     transform="matrix(0,1,1,0,0,0)"
+     cx="13.3639"
+     cy="5.4531622"
+     rx="4.0141001"
+     ry="3.7641001"
+     fill="none"
+     stroke="#550022"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     id="ellipse1"
+     style="stroke-width:0.9;stroke-dasharray:none" />
+  <path
+     transform="matrix(0,1,1,0,0,0)"
+     fill="none"
+     stroke="#550022"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     id="ellipse1-5"
+     style="stroke-width:1.05204;stroke-dasharray:none"
+     sodipodi:type="arc"
+     sodipodi:cx="11.075789"
+     sodipodi:cy="5.4342833"
+     sodipodi:rx="4.2738581"
+     sodipodi:ry="4.8306527"
+     sodipodi:start="1.5726428"
+     sodipodi:end="4.7022535"
+     sodipodi:arc-type="arc"
+     d="M 11.067898,10.264928 A 4.2738581,4.8306527 0 0 1 6.8019681,5.4543039 4.2738581,4.8306527 0 0 1 11.032473,0.60387866"
+     sodipodi:open="true" />
+  <path
+     style="fill:#ffd42a;fill-rule:evenodd;stroke:#550022;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:2;stroke-dasharray:none;paint-order:stroke fill markers"
+     d="M 5.46,7.184 5.4598551,0.80018361"
+     id="path1"
+     sodipodi:nodetypes="cc" />
+  <path
+     style="fill:#ffd42a;fill-rule:evenodd;stroke:#550022;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:2;stroke-dasharray:none;paint-order:stroke fill markers"
+     d="m 5.4598543,16.047019 v 7.125174"
+     id="path2"
+     sodipodi:nodetypes="cc" />
+  <circle
+     transform="matrix(0,1,1,0,0,0)"
+     cx="0.54789054"
+     cy="5.4531622"
+     r="0.5"
+     fill="#808080"
+     id="circle1-5"
+     style="stroke:none" />
+  <circle
+     transform="matrix(0,1,1,0,0,0)"
+     cx="23.514193"
+     cy="5.4531622"
+     r="0.5"
+     fill="#808080"
+     id="circle1" />
+  <!-- PE Layer: Green/Yellow-Green indicator for earth ground -->
+  <g
+     id="PE"
+     style="display:none">
+    <rect
+       x="20"
+       y="10"
+       width="9"
+       height="4"
+       fill="#90ee90"
+       stroke="#008000"
+       stroke-width="0.5"
+       id="pe-indicator" />
+  </g>
+  <!-- N Layer: Blue indicator for neutral -->
+  <g
+     id="N"
+     style="display:none">
+    <rect
+       x="20"
+       y="10"
+       width="9"
+       height="4"
+       fill="#add8e6"
+       stroke="#0000ff"
+       stroke-width="0.5"
+       id="n-indicator" />
+  </g>
+  <metadata
+     id="metadata2">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>Borners 3 polos</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+</svg>

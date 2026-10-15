@@ -23,7 +23,11 @@ _NC_NO_SVGS = tuple(s.lower() for s in (
 ))
 
 # Unidades de control y cargas: no transmiten corriente internamente.
-_CONTROL_UNITS = ('sst-c', 'vdf-c')
+# Los PLC (DVP20SX2/DVP16SP) son bloques de control: sus terminales comparten
+# columnas en el dibujo, por lo que sin este aislamiento la regla geométrica
+# multipolar los puentea internamente (p. ej. +24V con 0V) y produce un falso
+# cortocircuito DC en la simulación.
+_CONTROL_UNITS = ('sst-c', 'vdf-c', 'plc-dvp20sx2', 'plc-dvp16sp')
 _LOAD_KEYWORDS = ('resistor', 'coil', 'pilot', 'buzzer', 'lamp', 'load')
 
 class EnergyPropagator:

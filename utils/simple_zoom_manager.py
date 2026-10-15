@@ -111,6 +111,10 @@ class SimpleZoomManager:
         if hasattr(self.app, 'update_wire_numbers'):
             self.app.update_wire_numbers()
 
+        # Recalcular el marco rojo de límites de hoja para el nuevo zoom
+        if hasattr(self.app, 'draw_sheet_frame'):
+            self.app.draw_sheet_frame()
+
     def get_zoom_percentage(self):
         """Retorna zoom como porcentaje"""
         return int(self.canvas.zoom_level * 100)

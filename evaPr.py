@@ -5129,9 +5129,14 @@ class PlanoElectrico:
 
     def show_canvas_context_menu(self, event):
         """Muestra menú contextual en el canvas (área de dibujo)"""
+        current_sheet = self.project.get_active_sheet()
+
+        # En la Hoja de Gabinete 2D no debe aparecer ningún menú contextual
+        if current_sheet and current_sheet.name == "Hoja de Gabinete 2D":
+            return
+
         menu = tk.Menu(self.root, tearoff=0)
 
-        current_sheet = self.project.get_active_sheet()
         is_unifilar = current_sheet and current_sheet.name.startswith("Plano Unifilar")
         report_names = ["Prescripciones de Seguridad", "Lista de Materiales", "Resumen de Gabinete", "Plano de Borner", "Hoja de Gabinete 2D", "Tabla de Cableado"]
         is_report = current_sheet and current_sheet.name in report_names
@@ -6639,7 +6644,7 @@ class PlanoElectrico:
 
         if hasattr(self, 'event_handler'):
             self.event_handler.shape_drawing.activate('canaleta')
-            self.set_status("🖌️ Canaleta Activo: Haz clic izquierdo para empezar, desliza, y vuelve a hacer clic. Ctrl+clic derecho cambia el ancho comercial", "green")
+            self.set_status("🖌️ Canaleta Activo: Haz clic izquierdo para empezar, desliza, y vuelve a hacer clic. Clic derecho cambia el ancho comercial", "green")
             # Forzar cursor cruz para indicar interacción
             try: self.canvas.config(cursor="crosshair")
             except: pass
@@ -6859,7 +6864,7 @@ class PlanoElectrico:
                 ("Ctrl+D", "Insetar Riel Dim"),
                 ("Ctrl+F", "Insetar Canaleta Ranurada"),
                 ("Ctrl+B", "Insetar Block Terminal"),
-                ("Ctrl+clic der.", "Ancho comercial de la Canaleta"),
+                ("Clic der.", "Ancho comercial de la Canaleta"),
                 ("Clic der.", "Tipo de la Barra de Distribución"),
             ])
         ]

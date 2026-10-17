@@ -1246,13 +1246,12 @@ class EventHandler:
             self.app.drag_data["y"] = event.y
             return  # No procesar para evitar conflicto con Alt + click derecho
 
-        # Ctrl + clic derecho sobre una CANALETA en la Hoja 2D: elegir ancho comercial
-        ctrl_pressed = bool(event.state & 0x4)
-        if ctrl_pressed and self._abrir_menu_seccion_canaleta(event):
+        # Clic derecho sobre una CANALETA en la Hoja 2D: elegir ancho comercial
+        if self._abrir_menu_seccion_canaleta(event):
             return "break"
 
-        # Clic derecho (o Ctrl + clic derecho) sobre una BARRA DE DISTRIBUCIÓN
-        # en la Hoja 2D: elegir tipo/capacidad (172A/206A/263A)
+        # Clic derecho sobre una BARRA DE DISTRIBUCIÓN en la Hoja 2D:
+        # elegir tipo/capacidad (172A/206A/263A)
         if self._abrir_menu_barra_dist(event):
             return "break"
 
@@ -1446,53 +1445,25 @@ class EventHandler:
         return True
 
     def show_canaleta_section_menu(self, event, canaleta):
-        """Menú contextual con el catálogo de anchos comerciales de canaleta ranurada."""
-        import tkinter as tk
-        from models.shape import get_secciones_canaleta, formatear_seccion_canaleta, parse_seccion_canaleta
+        """Abre el editor de ancho comercial de la canaleta (estilo editor de etiquetas)."""
+        from ui.label_editors import CanaletaLabelEditor
+        CanaletaLabelEditor(self.app, canaleta)
 
-        secciones = get_secciones_canaleta()
-        if not secciones:
-            return
-
-        actual = formatear_seccion_canaleta(canaleta.ancho_fijo, canaleta.alto_fijo)
-
-        menu = tk.Menu(self.app.root, tearoff=0)
-        menu.add_command(label="📏 Ancho comercial de canaleta", state="disabled")
-        menu.add_separator()
-
-        for s in secciones:
-            dims = parse_seccion_canaleta(s)
-            if not dims:
-                continue
-            etiqueta = f"{int(round(dims[0]))} x {int(round(dims[1]))} mm"
-            if formatear_seccion_canaleta(*dims) == actual:
-                etiqueta = f"●  {etiqueta}"
-            menu.add_command(
-                label=etiqueta,
-                command=lambda d=dims: self._aplicar_seccion_canaleta(canaleta, d)
-            )
-
-        menu.add_separator()
-        menu.add_command(
-            label=f"Largo actual: {canaleta.largo:.0f} mm",
-            state="disabled"
-        )
-        try:
-            menu.post(event.x_root, event.y_root)
-        finally:
-            try:
-                menu.grab_release()
-            except Exception:
-                pass
+    def _es_barra_dist_shape(self, shape) -> bool:
+        """True si la forma es una barra de distribución (clase BarraDist o legacy con metadata)."""
+        if getattr(shape, 'shape_type', '') == 'barra_dist':
+            return True
+        meta = getattr(shape, 'metadata', None)
+        return isinstance(meta, dict) and bool(meta.get('barra_tipo'))
 
     def _barra_dist_en_posicion(self, x_comp: float, y_comp: float):
         """Devuelve la Barra de Distribución bajo el punto (coordenadas de mundo), o None."""
         for shape in reversed(self.app.shape_manager.shapes):
-            if getattr(shape, 'shape_type', '') == 'barra_dist' and shape.contains_point(x_comp, y_comp):
+            if self._es_barra_dist_shape(shape) and shape.contains_point(x_comp, y_comp):
                 return shape
         sheet = self.app.project.get_active_sheet()
         for shape in reversed(getattr(sheet, 'live_shape_objects', []) or []):
-            if getattr(shape, 'shape_type', '') == 'barra_dist' and shape.contains_point(x_comp, y_comp):
+            if self._es_barra_dist_shape(shape) and shape.contains_point(x_comp, y_comp):
                 return shape
         return None
 
@@ -1517,48 +1488,9 @@ class EventHandler:
         return True
 
     def show_barra_dist_menu(self, event, barra):
-        """Menú contextual con el catálogo de tipos/capacidades de barra de distribución."""
-        import tkinter as tk
-        from models.shape import get_tipos_barra_dist, get_ancho_barra_dist
-
-        tipos = get_tipos_barra_dist()
-        if not tipos:
-            return
-
-        meta = getattr(barra, 'metadata', {}) or {}
-        actual = getattr(barra, 'tipo', None) or meta.get('barra_tipo', '172A')
-
-        menu = tk.Menu(self.app.root, tearoff=0)
-        menu.add_command(label="⚡ Tipo de barra de distribución (cobre)", state="disabled")
-        menu.add_separator()
-
-        for tipo in tipos:
-            ancho = get_ancho_barra_dist(tipo)
-            etiqueta = f"{tipo}  ({ancho:g} mm)"
-            if tipo == actual:
-                etiqueta = f"●  {etiqueta}"
-            menu.add_command(
-                label=etiqueta,
-                command=lambda t=tipo: self._aplicar_tipo_barra_dist(barra, t)
-            )
-
-        largo = getattr(barra, 'largo', None)
-        if largo is None:
-            horizontal = getattr(barra, 'horizontal', meta.get('horizontal', True))
-            largo = getattr(barra, 'width' if horizontal else 'height', 0)
-
-        menu.add_separator()
-        menu.add_command(
-            label=f"Largo actual: {largo:.0f} mm",
-            state="disabled"
-        )
-        try:
-            menu.post(event.x_root, event.y_root)
-        finally:
-            try:
-                menu.grab_release()
-            except Exception:
-                pass
+        """Abre el editor de tipo/capacidad de la barra de distribución (estilo editor de etiquetas)."""
+        from ui.label_editors import BarraDistLabelEditor
+        BarraDistLabelEditor(self.app, barra)
 
     def _aplicar_tipo_barra_dist(self, barra, tipo):
         """Cambia el tipo/capacidad de la barra de distribución y refresca 2D + informes."""
@@ -1607,25 +1539,9 @@ class EventHandler:
         except Exception:
             pass
 
-        # Regenerar los reportes que ya existen y luego volver a la Hoja 2D
-        nombres = {s.name for s in self.app.project.sheets}
-        index_actual = self.app.project.active_sheet_index
-        if "Lista de Materiales" in nombres and hasattr(self.app, 'insert_bom_sheet'):
-            try:
-                self.app.insert_bom_sheet()
-            except Exception:
-                pass
-        if "Resumen de Gabinete" in nombres and hasattr(self.app, 'insert_cabinet_summary_sheet'):
-            try:
-                self.app.insert_cabinet_summary_sheet()
-            except Exception:
-                pass
-        try:
-            if self.app.project.active_sheet_index != index_actual:
-                self.app.switch_to_sheet(index_actual)
-        except Exception:
-            pass
-
+        # Nota: la Lista de Materiales y el Resumen de Gabinete se regeneran
+        # automáticamente al abrirlos (switch_to_sheet). No se regeneran aquí
+        # para evitar el parpadeo por cambio de hoja.
         try:
             self.app.save_undo_checkpoint()
         except Exception:
@@ -1661,25 +1577,9 @@ class EventHandler:
         except Exception:
             pass
 
-        # Regenerar los reportes que ya existen y luego volver a la Hoja 2D
-        nombres = {s.name for s in self.app.project.sheets}
-        index_actual = self.app.project.active_sheet_index
-        if "Lista de Materiales" in nombres and hasattr(self.app, 'insert_bom_sheet'):
-            try:
-                self.app.insert_bom_sheet()
-            except Exception:
-                pass
-        if "Resumen de Gabinete" in nombres and hasattr(self.app, 'insert_cabinet_summary_sheet'):
-            try:
-                self.app.insert_cabinet_summary_sheet()
-            except Exception:
-                pass
-        try:
-            if self.app.project.active_sheet_index != index_actual:
-                self.app.switch_to_sheet(index_actual)
-        except Exception:
-            pass
-
+        # Nota: la Lista de Materiales y el Resumen de Gabinete se regeneran
+        # automáticamente al abrirlos (switch_to_sheet). No se regeneran aquí
+        # para evitar el parpadeo por cambio de hoja.
         try:
             self.app.save_undo_checkpoint()
         except Exception:

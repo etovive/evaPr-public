@@ -1185,3 +1185,168 @@ class BlockTerminalLabelEditor:
 
         if close:
             self.window.destroy()
+
+class CanaletaLabelEditor:
+    """
+    Diálogo de edición para canaletas ranuradas (ancho comercial).
+    Mismo estilo visual que el editor de etiquetas del Block Terminal.
+    - Se graba automáticamente al cerrar.
+    - ESC cierra sin aplicar cambios.
+    """
+
+    def __init__(self, app, canaleta):
+        self.app      = app
+        self.canaleta = canaleta
+
+        self.window = tk.Toplevel(getattr(app, 'root', None))
+        self._build()
+
+    def _build(self):
+        from models.shape import (get_secciones_canaleta,
+                                  formatear_seccion_canaleta,
+                                  parse_seccion_canaleta)
+
+        canaleta = self.canaleta
+        window   = self.window
+
+        root_win = getattr(self.app, 'root', None)
+        window.title("Editar Etiqueta - Canaleta")
+        window.geometry("280x330")
+        if root_win:
+            window.transient(root_win)
+        window.resizable(False, False)
+        _setup_grab(window)
+
+        main_frame = tk.Frame(window, padx=20, pady=20)
+        main_frame.pack(fill='both', expand=True)
+        main_frame.columnconfigure(1, weight=1)
+
+        actual = formatear_seccion_canaleta(canaleta.ancho_fijo, canaleta.alto_fijo)
+
+        self._opciones = {}
+        etiquetas = []
+        for s in get_secciones_canaleta():
+            dims = parse_seccion_canaleta(s)
+            if not dims:
+                continue
+            etq = f"{int(round(dims[0]))} x {int(round(dims[1]))} mm"
+            etiquetas.append(etq)
+            self._opciones[etq] = dims
+
+        etq_actual = next(
+            (e for e, d in self._opciones.items()
+             if formatear_seccion_canaleta(*d) == actual),
+            etiquetas[0] if etiquetas else '')
+
+        tk.Label(main_frame, text="Ancho comercial:", font=_FONT_B).grid(
+            row=0, column=0, sticky='w', pady=5)
+        self.seccion_var = tk.StringVar(value=etq_actual)
+        seccion_cb = ttk.Combobox(
+            main_frame, textvariable=self.seccion_var,
+            values=etiquetas, state='readonly', width=18, font=_FONT)
+        seccion_cb.grid(row=0, column=1, sticky='ew', pady=5, padx=(10, 0))
+        seccion_cb.focus_set()
+
+        tk.Label(main_frame, text="Largo actual:", font=_FONT).grid(
+            row=1, column=0, sticky='w', pady=5)
+        tk.Label(main_frame, text=f"{canaleta.largo:.0f} mm", font=_FONT).grid(
+            row=1, column=1, sticky='w', pady=5, padx=(10, 0))
+
+        window.protocol('WM_DELETE_WINDOW', self._save_and_close)
+        window.bind('<Escape>', self._revert)
+        seccion_cb.bind('<Escape>', self._revert)
+
+        _smart_position(window, self.app)
+
+    def _revert(self, event=None):
+        self.window.destroy()
+
+    def _save_and_close(self):
+        dims    = self._opciones.get(self.seccion_var.get())
+        handler = getattr(self.app, 'event_handler', None)
+        if dims and handler and hasattr(handler, '_aplicar_seccion_canaleta'):
+            handler._aplicar_seccion_canaleta(self.canaleta, dims)
+        self.window.destroy()
+
+class BarraDistLabelEditor:
+    """
+    Diálogo de edición para barras de distribución (tipo/capacidad).
+    Mismo estilo visual que el editor de etiquetas del Block Terminal.
+    - Se graba automáticamente al cerrar.
+    - ESC cierra sin aplicar cambios.
+    """
+
+    def __init__(self, app, barra):
+        self.app   = app
+        self.barra = barra
+
+        self.window = tk.Toplevel(getattr(app, 'root', None))
+        self._build()
+
+    def _build(self):
+        from models.shape import get_tipos_barra_dist, get_ancho_barra_dist
+
+        barra  = self.barra
+        window = self.window
+
+        root_win = getattr(self.app, 'root', None)
+        window.title("Editar Etiqueta - Barra de Distribución")
+        window.geometry("280x330")
+        if root_win:
+            window.transient(root_win)
+        window.resizable(False, False)
+        _setup_grab(window)
+
+        main_frame = tk.Frame(window, padx=20, pady=20)
+        main_frame.pack(fill='both', expand=True)
+        main_frame.columnconfigure(1, weight=1)
+
+        meta   = getattr(barra, 'metadata', {}) or {}
+        actual = getattr(barra, 'tipo', None) or meta.get('barra_tipo', '172A')
+
+        self._opciones = {}
+        etiquetas = []
+        for tipo in get_tipos_barra_dist():
+            ancho = get_ancho_barra_dist(tipo)
+            etq = f"{tipo}  ({ancho:g} mm)"
+            etiquetas.append(etq)
+            self._opciones[etq] = tipo
+
+        etq_actual = next(
+            (e for e, t in self._opciones.items() if t == actual),
+            etiquetas[0] if etiquetas else '')
+
+        tk.Label(main_frame, text="Tipo (cobre):", font=_FONT_B).grid(
+            row=0, column=0, sticky='w', pady=5)
+        self.tipo_var = tk.StringVar(value=etq_actual)
+        tipo_cb = ttk.Combobox(
+            main_frame, textvariable=self.tipo_var,
+            values=etiquetas, state='readonly', width=18, font=_FONT)
+        tipo_cb.grid(row=0, column=1, sticky='ew', pady=5, padx=(10, 0))
+        tipo_cb.focus_set()
+
+        largo = getattr(barra, 'largo', None)
+        if largo is None:
+            horizontal = getattr(barra, 'horizontal', meta.get('horizontal', True))
+            largo = getattr(barra, 'width' if horizontal else 'height', 0)
+
+        tk.Label(main_frame, text="Largo actual:", font=_FONT).grid(
+            row=1, column=0, sticky='w', pady=5)
+        tk.Label(main_frame, text=f"{largo:.0f} mm", font=_FONT).grid(
+            row=1, column=1, sticky='w', pady=5, padx=(10, 0))
+
+        window.protocol('WM_DELETE_WINDOW', self._save_and_close)
+        window.bind('<Escape>', self._revert)
+        tipo_cb.bind('<Escape>', self._revert)
+
+        _smart_position(window, self.app)
+
+    def _revert(self, event=None):
+        self.window.destroy()
+
+    def _save_and_close(self):
+        tipo    = self._opciones.get(self.tipo_var.get())
+        handler = getattr(self.app, 'event_handler', None)
+        if tipo and handler and hasattr(handler, '_aplicar_tipo_barra_dist'):
+            handler._aplicar_tipo_barra_dist(self.barra, tipo)
+        self.window.destroy()

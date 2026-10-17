@@ -1699,7 +1699,18 @@ class TextComponent:
         """Establece la posición del texto."""
         self.x = x
         self.y = y
-        self.canvas.coords(self.canvas_id, x, y)
+        # El item de canvas vive en coordenadas escaladas por zoom; usar x,y en
+        # bruto (coordenadas del mundo) hacía saltar el texto al extremo cuando
+        # el zoom no era 100%.
+        zoom = getattr(self.canvas, 'zoom_level', 1.0) or 1.0
+        self.canvas.coords(self.canvas_id, x * zoom, y * zoom)
+        if self.selected and hasattr(self, 'selection_rect'):
+            bbox = self.canvas.bbox(self.canvas_id)
+            if bbox:
+                self.canvas.coords(
+                    self.selection_rect,
+                    bbox[0] - 5, bbox[1] - 5, bbox[2] + 5, bbox[3] + 5
+                )
 
     def delete(self):
         """Elimina el componente de texto del canvas."""

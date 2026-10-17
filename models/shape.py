@@ -606,6 +606,137 @@ class Canaleta:
         self._clear_canaleta_inner(canvas)
         self._render_canaleta_inner(canvas)
 
+# Barras de distribución de cobre: 1/8" de grosor y ancho comercial según
+# capacidad (en el 2D sólo se representa el ancho visible).
+BARRAS_DIST_TIPOS = [
+    ("172A", 12.7),   # 1/8" x 1/2"
+    ("206A", 19.05),  # 1/8" x 3/4"
+    ("263A", 25.4),   # 1/8" x 1"
+]
+
+def get_tipos_barra_dist() -> List[str]:
+    """Catálogo de tipos/capacidades comerciales de barra de distribución."""
+    return [tipo for tipo, _ in BARRAS_DIST_TIPOS]
+
+def get_ancho_barra_dist(tipo) -> float:
+    """Ancho visible (mm) para un tipo de barra; 12.7 (1/2") si es desconocido."""
+    for t, ancho in BARRAS_DIST_TIPOS:
+        if t == tipo:
+            return ancho
+    return BARRAS_DIST_TIPOS[0][1]
+
+def formatear_barra_dist_tipo(tipo) -> str:
+    """Devuelve el identificador de tipo en mayúsculas, p.ej. '172A'."""
+    return str(tipo).strip().upper()
+
+class BarraDist:
+    """Barra de distribución de cobre (repartidor atornillado al breaker).
+
+    Se representa en el plano 2D únicamente por su *ancho* visible; el largo lo
+    define el usuario al dibujar. La capacidad comercial (tipo) determina dicho
+    ancho: 172A (1/2"), 206A (3/4") o 263A (1").
+    """
+    def __init__(self, x: float, y: float, largo: float, horizontal: bool = True,
+                 canvas_id: Optional[int] = None, tipo=None):
+        self.x = x
+        self.y = y
+        self.largo = max(10, largo)
+        self.horizontal = horizontal
+        self.canvas_id = canvas_id
+        self.selected = False
+        self.shape_type = "barra_dist"
+        self.metadata = {}
+        self.inner_ids = []
+        self.fill = "#D8A56B"
+        self.outline = "#CD7F32"
+        self.outline_width = 1.5
+        self.label = ""
+
+        self.tipo = formatear_barra_dist_tipo(tipo) if tipo else BARRAS_DIST_TIPOS[0][0]
+        self.ancho_fijo = get_ancho_barra_dist(self.tipo)  # ancho visible (eje menor)
+
+    def set_tipo(self, tipo) -> bool:
+        """Cambia el tipo/capacidad comercial. Devuelve True si aplicó un cambio."""
+        nuevo = formatear_barra_dist_tipo(tipo)
+        if nuevo == self.tipo:
+            return False
+        self.tipo = nuevo
+        self.ancho_fijo = get_ancho_barra_dist(nuevo)
+        return True
+
+    def get_bbox(self):
+        """Bounding box según orientación (el ancho es siempre el eje menor)."""
+        semi_ancho = getattr(self, 'ancho_fijo', 12.7) / 2
+        if self.horizontal:
+            return (self.x - self.largo/2, self.y - semi_ancho,
+                    self.x + self.largo/2, self.y + semi_ancho)
+        else:
+            return (self.x - semi_ancho, self.y - self.largo/2,
+                    self.x + semi_ancho, self.y + self.largo/2)
+
+    def contains_point(self, x: float, y: float) -> bool:
+        """Verifica si el punto está dentro de la barra."""
+        x1, y1, x2, y2 = self.get_bbox()
+        return x1 <= x <= x2 and y1 <= y <= y2
+
+    def move(self, dx: float, dy: float):
+        """Mueve la barra."""
+        self.x += dx
+        self.y += dy
+
+    def to_dict(self) -> dict:
+        return {
+            "type": "barra_dist",
+            "x": self.x,
+            "y": self.y,
+            "largo": self.largo,
+            "horizontal": self.horizontal,
+            "tipo": self.tipo,
+            "outline": self.outline,
+            "outline_width": self.outline_width,
+            "fill": self.fill,
+            "metadata": self.metadata,
+            "label": self.label
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'BarraDist':
+        barra = cls(data["x"], data["y"], data.get("largo", 100),
+                    data.get("horizontal", True), tipo=data.get("tipo"))
+        barra.outline = data.get("outline", "#CD7F32")
+        barra.outline_width = data.get("outline_width", 1.5)
+        barra.fill = data.get("fill", "#D8A56B")
+        barra.metadata = data.get("metadata", {})
+        barra.label = data.get("label", "")
+        return barra
+
+    def _clear_barra_inner(self, canvas: tk.Canvas):
+        if hasattr(self, 'inner_ids'):
+            for i_id in self.inner_ids:
+                try: canvas.delete(i_id)
+                except: pass
+        self.inner_ids = []
+
+    def draw(self, canvas: tk.Canvas):
+        """Dibuja la barra de cobre (rectángulo con línea central tenue)."""
+        self._clear_barra_inner(canvas)
+
+        bbox = self.get_bbox()
+        screen_bbox = _transform_bbox_for_canvas(canvas, bbox)
+        x1, y1, x2, y2 = screen_bbox
+
+        try:
+            self.canvas_id = canvas.create_rectangle(
+                x1, y1, x2, y2, outline=self.outline,
+                width=self.outline_width, fill=self.fill
+            )
+        except Exception:
+            pass
+
+    def update_inner_graphics(self, canvas: tk.Canvas):
+        """Actualiza gráficos internos (sin detalles internos por ahora)."""
+        self._clear_barra_inner(canvas)
+
 class Ellipse:
     """Representa una elipse en el canvas - IDÉNTICO AL ORIGINAL"""
     def __init__(self, x: float, y: float, radius_x: float, radius_y: float, canvas_id: Optional[int] = None):
@@ -1447,6 +1578,15 @@ class ShapeManager:
             # 'seccion' permite crear la canaleta con un ancho comercial concreto
             shape = Canaleta(x, y, width, horizontal=is_horizontal,
                              seccion=shape_data.get('seccion'))  # ancho fijo de sección, largo variable
+        elif shape_type == "barra_dist":
+            is_horizontal = shape_data.get('horizontal', True)
+            largo = width if is_horizontal else height
+            shape = BarraDist(x, y, largo, horizontal=is_horizontal,
+                              tipo=shape_data.get('barra_tipo'))
+            shape.metadata['user_shape'] = True
+            shape.metadata['horizontal'] = is_horizontal
+            shape.metadata['barra_tipo'] = shape.tipo
+            shape.metadata['barra_ancho'] = shape.ancho_fijo
         elif shape_type == "line":
             x1 = shape_data.get('x1', 0)
             y1 = shape_data.get('y1', 0)
@@ -1469,10 +1609,16 @@ class ShapeManager:
         incoming_fill = shape_data.get('fill', '')
         if shape_type == 'canaleta' and not incoming_fill:
             pass  # Mantener self.fill = "#C0C0C0" definido en Canaleta.__init__
+        elif shape_type == 'barra_dist' and not incoming_fill:
+            pass  # Mantener self.fill = "#D8A56B" definido en BarraDist.__init__
         else:
             shape.fill = incoming_fill if incoming_fill else shape_data.get('fill', 'lightgray')
         shape.outline = shape_data.get('outline', 'black')
+        if shape_type == 'barra_dist':
+            shape.outline = shape_data.get('outline', '#CD7F32')
         shape.outline_width = shape_data.get('outline_width', 2)
+        if shape_type == 'barra_dist':
+            shape.outline_width = shape_data.get('outline_width', 1.5)
 
         # Marcar como forma insertada por el usuario: el generador del
         # Gabinete 2D debe preservarla al regenerar la hoja.
@@ -1481,7 +1627,7 @@ class ShapeManager:
         shape.metadata['user_shape'] = True
 
         # FIX Z-ORDER: Riel DIN y Canaleta siempre al inicio (detrás de componentes)
-        if shape_type in ["din_rail", "canaleta"]:
+        if shape_type in ["din_rail", "canaleta", "barra_dist"]:
             self.shapes.insert(0, shape)  # Insertar al inicio
         else:
             self.shapes.append(shape)  # Componentes al final

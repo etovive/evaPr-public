@@ -39,6 +39,20 @@ def _cable_section(amps):
 
 _BREAKER_SERIES = [1,2,3,4,6,8,10,13,16,20,25,32,40,50,63,80,100,125,160,200,250,315,400,500,630]
 
+# Fuentes conmutadas DC: la etiqueta (W, A) corresponde a la SALIDA. La protección
+# de la ENTRADA se dimensiona convirtiendo:
+#   P_entrada = P_salida / eficiencia   ;   I_entrada = P_entrada / V_entrada
+# La entrada puede ser 110 V o 220 V; se usa el PEOR CASO (110 V), que es el que
+# produce la mayor corriente de entrada.
+# OJO: aplica SOLO a fuentes DC (POWER_SUPPLY_DC). NO a fuentes AC ni a
+# transformadores, donde la etiqueta no representa la misma conversión.
+SOURCE_EFFICIENCY = 0.8
+SOURCE_MIN_INPUT_VOLTAGE = 110.0
+
+# Marcadores que identifican una fuente DC (salida DC) en el SVG, la categoría,
+# el nombre o la descripción. NO se incluyen variantes AC.
+_DC_SUPPLY_KEYWORDS = ('power_supply_dc', 'power-supply-dc', 'fuente_dc')
+
 # Estimaciones de consumo (VA) para cargas de una línea de control
 # Orden de precedencia: kw coincide en svg_file, category o nombre.
 # NOTA: 'contactor' NO está a propósito: sus contactos auxiliares/potencia
@@ -86,6 +100,91 @@ def _estimate_va(comp):
         if kw in fname or kw in cat or kw in name.lower():
             return va
     return 0.0
+
+def _source_input_current(comp):
+    """Corriente de ENTRADA de una fuente/transformador, vista desde su breaker.
+
+    La etiqueta de la fuente da la SALIDA (potencia en W y/o amperios de salida).
+    La corriente que circula por el breaker es la de la ENTRADA:
+
+        P_entrada = P_salida / eficiencia        (eficiencia típica 80%)
+        I_entrada = P_entrada / V_entrada         (110 V o 220 V)
+
+    La tensión de entrada se toma de un campo explícito de la etiqueta
+    ('voltaje_entrada'/'vin'/'input_voltage'); si no existe, se usa el peor caso
+    (110 V), que es el que produce la mayor corriente. Devuelve dict con p_out,
+    voltage, current y efficiency; o None si no se puede determinar la potencia.
+    """
+    ld = getattr(comp, 'label_data', {}) or {}
+
+    # Potencia de SALIDA (watts) desde la etiqueta
+    p_out = None
+    raw_p = str(ld.get('potencia', '') or ld.get('consumo', '') or '').strip()
+    m = _re.search(r'[\d.,]+', raw_p)
+    if m:
+        try:
+            p_out = float(m.group().replace(',', '.'))
+        except ValueError:
+            p_out = None
+
+    # Respaldo: V_salida x A_salida (ambos son de la etiqueta de la fuente)
+    if not p_out or p_out <= 0:
+        m_v = _re.search(r'[\d.,]+', str(ld.get('voltaje', '') or ''))
+        m_a = _re.search(r'[\d.,]+', str(ld.get('amperios', '') or ''))
+        if m_v and m_a:
+            try:
+                p_out = float(m_v.group().replace(',', '.')) * \
+                        float(m_a.group().replace(',', '.'))
+            except ValueError:
+                p_out = None
+
+    if not p_out or p_out <= 0:
+        return None
+
+    voltage = _source_input_voltage(comp)
+    current = (p_out / SOURCE_EFFICIENCY) / voltage
+    return {
+        'p_out': p_out,
+        'voltage': voltage,
+        'current': current,
+        'efficiency': SOURCE_EFFICIENCY,
+    }
+
+def _source_input_voltage(comp):
+    """Tensión de ENTRADA (AC) de una fuente, si la etiqueta la declara.
+
+    Busca un campo explícito de tensión de entrada; si no existe, devuelve el
+    peor caso (SOURCE_MIN_INPUT_VOLTAGE = 110 V) para una entrada 110/220 V.
+    """
+    ld = getattr(comp, 'label_data', {}) or {}
+    for key in ('voltaje_entrada', 'vin', 'input_voltage', 'v_in', 'input_volt'):
+        raw = str(ld.get(key, '') or '').strip()
+        m = _re.search(r'[\d.,]+', raw)
+        if m:
+            try:
+                v = float(m.group().replace(',', '.'))
+                if v > 0:
+                    return v
+            except ValueError:
+                pass
+    return SOURCE_MIN_INPUT_VOLTAGE
+
+def _is_dc_source_component(comp):
+    """True SOLO si el componente es una fuente DC (etiqueta = SALIDA DC).
+
+    Excluye explícitamente las fuentes AC (POWER_SUPPLY_AC) y los transformadores,
+    donde la conversión entrada/salida con eficiencia no aplica.
+    """
+    if comp is None:
+        return False
+    ld = getattr(comp, 'label_data', {}) or {}
+    fname = (getattr(comp, 'svg_file', '') or '').lower()
+    cat   = (getattr(comp, 'category', '') or '').lower()
+    name  = (ld.get('name', '') or ld.get('nombre', '') or
+             getattr(comp, 'name', '') or '').lower()
+    desc  = str(ld.get('description', '') or '').lower()
+    blob  = ' '.join((fname, cat, name, desc))
+    return any(k in blob for k in _DC_SUPPLY_KEYWORDS)
 
 # Rotación: Schneider -> ABB -> Siemens -> Chint -> LS -> WEG -> (repite)
 # Criterio: escalones lo más cercanos posible entre marcas para un mismo
@@ -356,6 +455,7 @@ class ProtectionSuggestionEngine:
         self.brand = brand
         self.connections = getattr(app, 'connections', [])
         self.last_charge_component = None
+        self.last_charge_type = None
 
         self.sheet_name = "DESCONOCIDA"
         try:
@@ -500,6 +600,7 @@ class ProtectionSuggestionEngine:
         found_charges.sort(key=lambda x: (x[0], priority.get(x[1], 99)))
         _dist, best_type, best_name, best_comp = found_charges[0]
         self.last_charge_component = best_comp
+        self.last_charge_type = best_type
         if best_name:
             prefix = "MOTOR " if best_type == "Motor" and not best_name.startswith("MOTOR") else f"{best_type} "
             return f"{prefix}{best_name}"
@@ -554,6 +655,20 @@ class ProtectionSuggestionEngine:
             'breaker': breaker,
             'loads': loads,
         }
+
+    def compute_source_breaker(self):
+        """Dimensiona la protección de la ENTRADA de una fuente DC.
+
+        Ojo: NO se usa la etiqueta de la fuente tal cual, porque corresponde a la
+        SALIDA (24 V DC). La corriente del breaker es la de la ENTRADA (110/220 V),
+        calculada en _source_input_current con la eficiencia (80%).
+        Solo aplica a fuentes DC; para AC/transformadores devuelve None.
+        Retorna dict (p_out, voltage, current, efficiency) o None.
+        """
+        comp = self.last_charge_component
+        if comp is None or not _is_dc_source_component(comp):
+            return None
+        return _source_input_current(comp)
 
     def _identify_component_type(self, comp):
         """Identifica el tipo de carga eléctrica."""

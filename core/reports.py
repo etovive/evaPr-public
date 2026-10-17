@@ -144,6 +144,18 @@ class BOMGenerator:
         names_covered = set()                   # nombres con contactor o contactos esclavos
 
         for sheet in project.sheets:
+            # Block Terminals (Repartidor de Cargas): se guardan en la propia
+            # hoja (p. ej. 'Hoja de Gabinete 2D'), por lo que deben recolectarse
+            # ANTES del filtro de hojas excluidas para sí entrar en la BOM.
+            for bt in getattr(sheet, 'live_block_terminals', []):
+                if not isinstance(bt, dict):
+                    continue
+                components.append({
+                    'category': 'block_terminal',
+                    'svg_file': 'block_terminal',
+                    'label_data': bt['label_data']
+                })
+
             if sheet.name in EXCLUDED_SHEETS or 'unifilar' in sheet.name.lower():
                 continue
 
@@ -189,16 +201,6 @@ class BOMGenerator:
 
                 if 'svg_file' in elem or 'category' in elem:
                     components.append(elem)
-
-            # Block Terminals
-            for bt in getattr(sheet, 'live_block_terminals', []):
-                if not isinstance(bt, dict):
-                    continue
-                components.append({
-                    'category': 'block_terminal',
-                    'svg_file': 'block_terminal',
-                    'label_data': bt['label_data']
-                })
 
         # Micro-pasada sobre bobinas (ya en memoria)
         # RELÉ EN ZÓCALO: bobina sin contactor ni contactos esclavos asociados.
@@ -422,6 +424,10 @@ class BOMGenerator:
                 # referencia para contabilizarla, pero se muestra una sola vez.
                 pole_count = self._get_borner_pole_count(svg_lower) if is_borner else 1
                 grouped[key].extend([name] * pole_count)
+            elif cat_lower == 'block_terminal':
+                # Un Block Terminal es un elemento físico: debe contarse en la
+                # BOM aunque no tenga referencia asignada (evita cantidad 0).
+                grouped[key].append(label_data.get('name') or 'BT')
 
         return grouped
 
@@ -600,7 +606,7 @@ class BOMGenerator:
         se agruparán por sección.
         """
         import math as _math
-        from models.shape import DinRail, Canaleta
+        from models.shape import DinRail, Canaleta, BarraDist
 
         # 1. Dimensiones del gabinete
         dim_str = ""
@@ -631,6 +637,7 @@ class BOMGenerator:
         # 2. Riel DIN y Canaleta (desde Hoja de Gabinete 2D o cálculo)
         real_riel_m = 0.0
         canaletas_por_seccion_m = {}  # seccion -> metros totales
+        barras_por_tipo_m = {}        # tipo (172A/206A/263A) -> metros totales
 
         for sheet in app.project.sheets:
             if sheet.name == "Hoja de Gabinete 2D":
@@ -641,10 +648,13 @@ class BOMGenerator:
                     elif isinstance(shape, Canaleta):
                         sec = getattr(shape, 'seccion', None) or '40X40'
                         canaletas_por_seccion_m[sec] = canaletas_por_seccion_m.get(sec, 0.0) + shape.largo / 1000.0
+                    elif isinstance(shape, BarraDist):
+                        tipo = getattr(shape, 'tipo', None) or '172A'
+                        barras_por_tipo_m[tipo] = barras_por_tipo_m.get(tipo, 0.0) + shape.largo / 1000.0
                 break
 
         # Si no hay hoja 2D, usar el cálculo estimado (una única sección)
-        if real_riel_m == 0.0 and not canaletas_por_seccion_m:
+        if real_riel_m == 0.0 and not canaletas_por_seccion_m and not barras_por_tipo_m:
             try:
                 cab_gen = CabinetSummaryGenerator(app.project)
                 classified = cab_gen._classify_devices(app.project)
@@ -686,6 +696,21 @@ class BOMGenerator:
             if not grouped_data[key_can]:
                 for i in range(1, tiras_can + 1):
                     grouped_data[key_can].append(f"CAN-{idx + 1}-{i}")
+
+        # Barra de distribución de cobre (una fila por cada tipo/capacidad)
+        from models.shape import get_ancho_barra_dist
+        for idx, (tipo, metros) in enumerate(sorted(barras_por_tipo_m.items())):
+            if metros <= 0:
+                continue
+            tiras_bar = _math.ceil(metros / 2.0)
+            specs_bar = f"{metros:.2f} m → {tiras_bar} tira(s) de 2 m"
+            ancho = get_ancho_barra_dist(tipo)
+            key_bar = (f"Barra de Distribución de cobre {tipo} ({ancho:g} mm)", specs_bar)
+            if key_bar not in grouped_data:
+                grouped_data[key_bar] = []
+            if not grouped_data[key_bar]:
+                for i in range(1, tiras_bar + 1):
+                    grouped_data[key_bar].append(f"BAR-{idx + 1}-{i}")
 
     def _draw_bom_table(self, app, grouped_data):
         """Dibuja la tabla visualmente con estilo profesional"""
@@ -1423,6 +1448,24 @@ class BornerPlanGenerator:
             if sheet.name in excluded_sheets or 'unifilar' in sheet.name.lower():
                 continue
 
+            # Mapa de adyacencia de los empalmes (junctions) de la hoja. Permite
+            # resolver el dispositivo real al que llega una borna cuando el tramo
+            # pasa por un nodo de cable (p.ej. S3 -> J17 -> X7), en vez de quedarse
+            # con el propio empalme, que no es un dispositivo.
+            junction_neighbors = {}
+            if hasattr(sheet, 'connections'):
+                for _conn in sheet.connections:
+                    if not isinstance(_conn, dict):
+                        continue
+                    _s_i = _conn.get('start_component_idx')
+                    _e_i = _conn.get('end_component_idx')
+                    if _s_i is None or _e_i is None:
+                        continue
+                    if 0 <= _s_i < len(sheet.elements) and self._is_junction(sheet.elements[_s_i]):
+                        junction_neighbors.setdefault(_s_i, set()).add(_e_i)
+                    if 0 <= _e_i < len(sheet.elements) and self._is_junction(sheet.elements[_e_i]):
+                        junction_neighbors.setdefault(_e_i, set()).add(_s_i)
+
             for comp_idx, elem in enumerate(sheet.elements):
                 if isinstance(elem, dict):
                     svg_file = str(elem.get('svg_file', '')).lower()
@@ -1437,6 +1480,7 @@ class BornerPlanGenerator:
                             'num_poles': num_poles,
                             'entradas': [],  # Conexiones que LLEGAN al borne
                             'salidas': [],   # Conexiones que SALEN del borne
+                            'traversed': [], # Dispositivos reales alcanzados vía empalmes
                             'color': '#cccccc'  # Color por defecto
                         }
 
@@ -1445,6 +1489,7 @@ class BornerPlanGenerator:
                             borner['color'] = '#90EE90'  # Verde claro
 
                         # Buscar conexiones para este borner
+                        far_junctions = set()
                         if hasattr(sheet, 'connections'):
                             for conn_idx, conn in enumerate(sheet.connections):
                                 if isinstance(conn, dict):
@@ -1456,6 +1501,8 @@ class BornerPlanGenerator:
                                     if end_idx == comp_idx and start_idx is not None:
                                         start_elem = sheet.elements[start_idx] if 0 <= start_idx < len(sheet.elements) else None
                                         if start_elem:
+                                            if self._is_junction(start_elem):
+                                                far_junctions.add(start_idx)
                                             # Obtener etiqueta real del borne (ej: "2" en lugar de índice 3)
                                             label_punto = self._get_terminal_label(start_elem, conn.get('start_point_idx', 0))
 
@@ -1473,6 +1520,8 @@ class BornerPlanGenerator:
                                     elif start_idx == comp_idx and end_idx is not None:
                                         end_elem = sheet.elements[end_idx] if 0 <= end_idx < len(sheet.elements) else None
                                         if end_elem:
+                                            if self._is_junction(end_elem):
+                                                far_junctions.add(end_idx)
                                             label_punto = self._get_terminal_label(end_elem, conn.get('end_point_idx', 0))
 
                                             salida = {
@@ -1484,6 +1533,29 @@ class BornerPlanGenerator:
                                                 'desc': self._element_description(end_elem)
                                             }
                                             borner['salidas'].append(salida)
+
+                        # Resolver empalmes: si alguna conexión directa de la borna
+                        # es un nodo de cable (junction), seguir la red de empalmes
+                        # para registrar el dispositivo real del otro lado. Así una
+                        # borna como X7 (S3 -> J17 -> X7) se agrupa con su presostato
+                        # S3 en lugar de quedar como "Componente" genérico.
+                        _traversed_names = set()
+                        for _j_idx in far_junctions:
+                            for _dev in self._resolve_junction_devices(
+                                    sheet, _j_idx, comp_idx, junction_neighbors):
+                                _dev_name = (_dev.get('label_data', {}).get('name') or
+                                             _dev.get('name', 'UNKNOWN'))
+                                if _dev_name in _traversed_names:
+                                    continue
+                                _traversed_names.add(_dev_name)
+                                borner['traversed'].append({
+                                    'nombre': _dev_name,
+                                    'punto': '',
+                                    'borner_punto': 0,
+                                    'color': '#000000',
+                                    'tipo': _dev.get('svg_file', ''),
+                                    'desc': self._element_description(_dev)
+                                })
 
                         # Detección de tierra (PE): por nombre del conector, símbolo
                         # de tierra (t.svg) o color de cable. Marca el borne en verde.
@@ -1509,6 +1581,47 @@ class BornerPlanGenerator:
                         all_borners.append(borner)
 
         return all_borners
+
+    @staticmethod
+    def _is_junction(elem):
+        """True si el elemento es un nodo/empalme de cable (no un dispositivo)."""
+        if not isinstance(elem, dict):
+            return False
+        if str(elem.get('type', '')).lower() == 'junction':
+            return True
+        return str(elem.get('category', '')).lower() == 'junction'
+
+    @staticmethod
+    def _is_borner_elem(elem):
+        """True si el elemento es una borner o un bloque de bornas."""
+        if not isinstance(elem, dict):
+            return False
+        return 'borner' in str(elem.get('svg_file', '')).lower()
+
+    def _resolve_junction_devices(self, sheet, junction_idx, borner_idx, junction_neighbors):
+        """
+        Dispositivos reales alcanzables desde un empalme siguiendo cadenas de
+        empalmes. Excluye empalmes, bornas y el propio borne de origen.
+        """
+        visited = {junction_idx}
+        stack = [junction_idx]
+        devices = []
+        while stack:
+            current = stack.pop()
+            for neighbor in junction_neighbors.get(current, ()):
+                if neighbor in visited or neighbor == borner_idx:
+                    continue
+                visited.add(neighbor)
+                if neighbor < 0 or neighbor >= len(sheet.elements):
+                    continue
+                elem = sheet.elements[neighbor]
+                if self._is_junction(elem):
+                    stack.append(neighbor)
+                elif self._is_borner_elem(elem):
+                    continue
+                else:
+                    devices.append(elem)
+        return devices
 
     def _extract_num_poles(self, svg_file):
         """Extrae el número de polos del nombre del archivo SVG"""
@@ -1552,6 +1665,11 @@ class BornerPlanGenerator:
             for entrada in borner['entradas']:
                 comp_type = self.get_component_type(entrada['tipo'], entrada['nombre'], entrada.get('desc', ''))
                 connected_components.append((comp_type, entrada['nombre'], 'entrada'))
+            # Dispositivos reales detectados al cruzar empalmes: cuentan para la
+            # agrupación (p.ej. X7 -> J17 -> S3 se agrupa con el presostato S3).
+            for traversed in borner.get('traversed', []):
+                comp_type = self.get_component_type(traversed['tipo'], traversed['nombre'], traversed.get('desc', ''))
+                connected_components.append((comp_type, traversed['nombre'], 'traves'))
 
             borner['connected_components'] = connected_components
 
@@ -1851,7 +1969,7 @@ class BornerPlanGenerator:
             group_component_type = None
             for b in borners:
                 ct = b.get('component_type')
-                if ct in ("Motor", "Electrovalvula"):
+                if ct in ("Motor", "Electrovalvula", "Presostato"):
                     group_component_type = ct
                     break
             if group_component_type:

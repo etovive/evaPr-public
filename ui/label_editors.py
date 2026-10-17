@@ -582,6 +582,7 @@ class ComponentLabelEditor:
                 get_component_keyword,
                 _next_breaker, _select_contactor,
                 _model_name, _cable_section,
+                _is_dc_source_component,
                 BRAND_ROTATION,
             )
         except ImportError as e:
@@ -664,6 +665,28 @@ class ComponentLabelEditor:
                 if hasattr(app, 'set_status'):
                     app.set_status(f"✅ {desc_text} (sin cargas con amperios)", "orange")
             return
+
+        # Fuente DC (POWER_SUPPLY_DC): la etiqueta es la SALIDA (ej. 24 V DC). El
+        # breaker protege la ENTRADA (110/220 V), así que se convierte la potencia
+        # con la eficiencia (80%) y se usa el peor caso de tensión (110 V).
+        # NO aplica a fuentes AC ni a transformadores.
+        if _is_dc_source_component(charge_comp):
+            src = engine.compute_source_breaker()
+            if src:
+                calibre_a = _next_breaker(src['current'] * 1.55)
+                modelo    = _model_name('breaker', calibre_a, current_brand)
+                self.description_var.set(modelo)
+                self.amperios_var.set(f"{calibre_a}")
+                self.marca_var.set(current_brand)
+                self.voltaje_var.set(f"{src['voltage']:.0f}")
+                self.calibre_cable_var.set(_cable_section(src['current']))
+                if hasattr(app, 'set_status'):
+                    app.set_status(
+                        f"✅ {modelo} | salida {src['p_out']:.0f}W @ "
+                        f"{int(src['efficiency']*100)}% → entrada "
+                        f"{src['current']:.2f}A @ {src['voltage']:.0f}V | cable "
+                        f"{_cable_section(src['current'])}", "blue")
+                return
 
         ld_m    = getattr(charge_comp, 'label_data', {}) or {}
         m_a     = _re.search(r'[\d.,]+', str(ld_m.get('amperios', '') or ''))

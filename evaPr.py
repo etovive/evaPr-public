@@ -881,10 +881,10 @@ class PlanoElectrico:
                     _report_error("Apply State: Connection", e)
 
             if "shapes" in state and hasattr(self, 'shape_manager'):
-                from models.shape import Circle, Rect, RoundedRect, Ellipse, Square, MultipoleBorner, DinRail, Canaleta
+                from models.shape import Circle, Rect, RoundedRect, Ellipse, Square, MultipoleBorner, DinRail, Canaleta, BarraDist
                 shape_types = {
                     "circle": Circle, "rect": Rect, "rounded_rect": RoundedRect, "ellipse": Ellipse, "square": Square,
-                    "multipole_borner": MultipoleBorner, "din_rail": DinRail, "canaleta": Canaleta
+                    "multipole_borner": MultipoleBorner, "din_rail": DinRail, "canaleta": Canaleta, "barra_dist": BarraDist
                 }
                 for s_data in state["shapes"]:
                     try:
@@ -1063,7 +1063,16 @@ class PlanoElectrico:
 
                 if comp:
                     comp.draw()
-                    self.components.append(comp)
+                    # Los textos insertados van a su propia lista, igual que en
+                    # place_text_component(). Si se añadían a self.components, el
+                    # resto del código los trataba como componentes eléctricos
+                    # (get_connection_points_global, .size, ...) y cada clic o
+                    # movimiento de ratón lanzaba AttributeError, dejando el
+                    # lienzo congelado.
+                    if isinstance(comp, TextComponent):
+                        self.text_components.append(comp)
+                    else:
+                        self.components.append(comp)
                     new_components.append(comp)
                     new_elements.append(comp)
             except Exception as e:
@@ -1105,10 +1114,10 @@ class PlanoElectrico:
 
         # 3. Pegar formas
         if hasattr(self, 'shape_manager'):
-            from models.shape import Circle, Rect, RoundedRect, Ellipse, Square, MultipoleBorner, DinRail, Canaleta
+            from models.shape import Circle, Rect, RoundedRect, Ellipse, Square, MultipoleBorner, DinRail, Canaleta, BarraDist
             shape_types = {
                 "circle": Circle, "rect": Rect, "rounded_rect": RoundedRect, "ellipse": Ellipse, "square": Square,
-                "multipole_borner": MultipoleBorner, "din_rail": DinRail, "canaleta": Canaleta
+                "multipole_borner": MultipoleBorner, "din_rail": DinRail, "canaleta": Canaleta, "barra_dist": BarraDist
             }
             for s_data in self.clipboard.get("shapes", []):
                 try:
@@ -2020,6 +2029,20 @@ class PlanoElectrico:
             # Alinear con la etiqueta fija más cercana (misma línea horizontal)
             self._align_text_to_nearest_label(text_comp)
 
+            # Limpiar cualquier selección previa (componentes/shapes) para que el
+            # texto recién colocado sea el único elemento seleccionado y el
+            # arrastre no lo redirija a un grupo de selección antiguo.
+            if hasattr(self, 'selected_elements'):
+                for _el in self.selected_elements:
+                    if hasattr(_el, 'selected'):
+                        _el.selected = False
+                self.selected_elements.clear()
+            if hasattr(self, 'shape_manager') and self.shape_manager:
+                try:
+                    self.shape_manager.selected_shape = None
+                except Exception:
+                    pass
+
             # Auto-selección para permitir movimiento inmediato
             text_comp.select()
             self.selected_component = text_comp
@@ -2306,6 +2329,7 @@ class PlanoElectrico:
             'button_riel_dim': False,   # Ctrl+D: Insertar Riel DIN
             'button_canaleta': False,   # Ctrl+F: Insertar Canaleta
             'button_block_t': False,    # Ctrl+B: Insertar Block Terminal
+            'button_barradist': False,  # Insertar Barra de Distribución (solo Hoja 2D)
         }
 
         # Botón1: Ctrl+H - Centrar Verticalmente
@@ -2671,6 +2695,29 @@ class PlanoElectrico:
         title_bt = get_svg_title(get_app_dir() / "svgs" / "Block_T.svg")
         ToolTip(btn_block_t, title_bt or "Block Terminal (Ctrl+B)", condition_callback=self.tooltips_enabled.get)
 
+        # Botón Barra de distribución: Insertar barra de cobre en Hoja 2D
+        try:
+            self.btn_barradist_image = self._load_button_image("BarraDist.svg", size=(24, 35))
+        except Exception:
+            self.btn_barradist_image = None
+        btn_barradist = tk.Button(
+            self.custom_buttons_bar,
+            image=self.btn_barradist_image if self.btn_barradist_image else None,
+            text="" if self.btn_barradist_image else "==",
+            width=40,
+            height=40,
+            compound="center",
+            relief=tk.FLAT,
+            borderwidth=0,
+            bg="#c3c3c3",
+            command=lambda: self._simulate_insert_barra_dist()
+        )
+        btn_barradist.pack()
+        if self.btn_barradist_image:
+            btn_barradist.image = self.btn_barradist_image
+        self.button_widgets["button_barradist"] = btn_barradist
+        ToolTip(btn_barradist, "Barra de distribución de cobre (172A/206A/263A)", condition_callback=self.tooltips_enabled.get)
+
     def _update_buttons_for_sheet(self, sheet_name):
         """Muestra u oculta botones de la barra vertical según la hoja activa.
 
@@ -2686,7 +2733,7 @@ class PlanoElectrico:
             return
 
         # Botones exclusivos de Gabinete 2D (ocultos en el resto de hojas)
-        GABINETE_ONLY = {"button_riel_dim", "button_canaleta", "button_block_t"}
+        GABINETE_ONLY = {"button_riel_dim", "button_canaleta", "button_block_t", "button_barradist"}
         # Botones de alineación y rotación (visibilidad condicionada por configuración en Gabinete 2D)
         CONDITIONAL_GABINETE = {"button1", "button2", "button3", "button_alinear_hs", "button5", "button6"}
 
@@ -2984,12 +3031,32 @@ class PlanoElectrico:
         except Exception:
             pass
 
+    def _simulate_insert_barra_dist(self):
+        """Activa el modo de dibujo de Barra de Distribución en Hoja 2D."""
+        try:
+            if self.button_active_states.get("button_barradist", False):
+                if hasattr(self, 'event_handler'):
+                    self.event_handler.shape_drawing.cancel()
+                self._deactivate_button("button_barradist")
+                self.set_status("🛑 Barra de distribución cancelada", "orange")
+                return
+            self._deactivate_button("button_riel_dim")
+            self._deactivate_button("button_canaleta")
+            self._deactivate_button("button_block_t")
+            if hasattr(self, 'event_handler'):
+                self.event_handler.shape_drawing.cancel()
+            self._activate_button("button_barradist")
+            self.activate_barra_dist_draw()
+        except Exception:
+            pass
+
     def _simulate_ctrl_b(self):
         """Inserta un Block Terminal (Ctrl+B) con feedback visual momentáneo."""
         try:
             # Desactivar otros modos de dibujo 2D activos
             self._deactivate_button("button_riel_dim")
             self._deactivate_button("button_canaleta")
+            self._deactivate_button("button_barradist")
             if hasattr(self, 'event_handler'):
                 self.event_handler.shape_drawing.cancel()
 
@@ -3020,6 +3087,7 @@ class PlanoElectrico:
         mapping = {
             'din_rail': 'button_riel_dim',
             'canaleta': 'button_canaleta',
+            'barra_dist': 'button_barradist',
         }
         btn_name = mapping.get(shape_type)
         if btn_name:
@@ -4643,7 +4711,7 @@ class PlanoElectrico:
                 )
                 self.lines.append(line_id)
 
-            elif elem.get("type") in ["circle", "square", "rect", "rounded_rect", "ellipse", "text", "line", "geom_line", "din_rail", "canaleta", "multipole_borner"]:
+            elif elem.get("type") in ["circle", "square", "rect", "rounded_rect", "ellipse", "text", "line", "geom_line", "din_rail", "canaleta", "barra_dist", "multipole_borner"]:
                 # Reconstruir objeto shape
                 shape_type = elem["type"]
                 x = elem.get("x", 0)
@@ -4681,6 +4749,10 @@ class PlanoElectrico:
                     # Restaurar Canaleta desde diccionario
                     from models.shape import Canaleta
                     shape = Canaleta.from_dict(elem)
+                elif shape_type == "barra_dist":
+                    # Restaurar BarraDist desde diccionario
+                    from models.shape import BarraDist
+                    shape = BarraDist.from_dict(elem)
                 elif shape_type == "text":
                     from models.component import TextComponent
                     text_comp = TextComponent.from_dict(self.canvas, elem)
@@ -6573,7 +6645,31 @@ class PlanoElectrico:
             except: pass
             self._deactivate_button("button_riel_dim")
             self._deactivate_button("button_block_t")
+            self._deactivate_button("button_barradist")
             self._activate_button("button_canaleta")
+        else:
+            print("❌ ATENCIÓN: Aún no existe event_handler, espera 1 segundo que inicie el lienzo")
+
+    def activate_barra_dist_draw(self, event=None):
+        """Activa el modo de dibujo de Barra de Distribución en Hoja 2D."""
+        try:
+            current_sheet = self.project.get_active_sheet()
+            if not current_sheet or "2D" not in current_sheet.name.upper():
+                self.set_status("⚠️ La Barra de distribución solo se puede dibujar en la Hoja de Gabinete 2D", "orange")
+                return
+        except Exception:
+            pass
+        if hasattr(self, 'event_handler'):
+            self.event_handler.shape_drawing.activate('barra_dist')
+            self.set_status("🖌️ Barra de Distribución Activo: Haz clic izquierdo para empezar, desliza, y vuelve a hacer clic. Clic derecho cambia el tipo (172A/206A/263A)", "green")
+            try:
+                self.canvas.config(cursor="crosshair")
+            except Exception:
+                pass
+            self._deactivate_button("button_riel_dim")
+            self._deactivate_button("button_canaleta")
+            self._deactivate_button("button_block_t")
+            self._activate_button("button_barradist")
         else:
             print("❌ ATENCIÓN: Aún no existe event_handler, espera 1 segundo que inicie el lienzo")
 
@@ -6763,6 +6859,7 @@ class PlanoElectrico:
                 ("Ctrl+F", "Insetar Canaleta Ranurada"),
                 ("Ctrl+B", "Insetar Block Terminal"),
                 ("Ctrl+clic der.", "Ancho comercial de la Canaleta"),
+                ("Clic der.", "Tipo de la Barra de Distribución"),
             ])
         ]
 
@@ -7625,6 +7722,8 @@ class PlanoElectrico:
 
             # 1. Seleccionar componentes
             for comp in self.components:
+                if not hasattr(comp, 'size'):
+                    continue
                 cl, ct = comp.x, comp.y
                 cr, cb = comp.x + comp.size[0], comp.y + comp.size[1]
 
@@ -7780,6 +7879,13 @@ class PlanoElectrico:
                 try:
                     if hasattr(element, '_selected'):
                         element._selected = True
+                    # Al marcar la selección no estamos en un arrastre, así que
+                    # limpiamos `_is_moving` (que puede quedar activo tras un
+                    # move() programático: alineaciones, distribuciones, etc.).
+                    # Sin esto, update_selection_visual() retorna temprano y el
+                    # elemento queda seleccionado pero sin marca visual.
+                    if hasattr(element, '_is_moving'):
+                        element._is_moving = False
                     if hasattr(element, 'update_selection_visual'):
                         element.update_selection_visual()
                 except Exception:
@@ -9311,7 +9417,7 @@ class PlanoElectrico:
                         if hasattr(sheet, 'live_shape_objects') and sheet.live_shape_objects:
                             # Buscar si hay shapes en sheet.elements que necesiten actualización
                             # Primero limpiar shapes viejos de sheet.elements
-                            sheet.elements = [e for e in sheet.elements if e.get("type") not in ["din_rail", "canaleta", "circle", "square", "rect", "ellipse", "line", "geom_line", "multipole_borner"]]
+                            sheet.elements = [e for e in sheet.elements if e.get("type") not in ["din_rail", "canaleta", "barra_dist", "circle", "square", "rect", "ellipse", "line", "geom_line", "multipole_borner"]]
 
                             # Ahora serializar shapes vivos actualizados
                             for shape in sheet.live_shape_objects:

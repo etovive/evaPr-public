@@ -35,6 +35,15 @@ class ShapeDrawingState:
         except Exception:
             return (40, 40)
 
+    # Barra de distribución de cobre: 1/8" grosor x {ancho} in.
+    # En el 2D sólo se representa el ancho visible.
+
+    def _ancho_barra_dist(self):
+        """Ancho visible (mm) de la barra de distribución a dibujar."""
+        from models.shape import get_ancho_barra_dist
+        tipo = getattr(self, '_barra_dist_tipo', None) or "172A"
+        return get_ancho_barra_dist(tipo)
+
     def start_drawing(self, x, y):
         """Primer click: Inicia dibujo"""
         if not self.shape_type:
@@ -128,6 +137,26 @@ class ShapeDrawingState:
                 x1, y1, x2, y2, outline="blue", width=2, dash=(5, 5), fill=""
             )
             self._canaleta_vertical = is_vertical
+        elif self.shape_type == "barra_dist":
+            dx = abs(current_x - self.start_x)
+            dy = abs(current_y - self.start_y)
+            is_vertical = dy > dx
+            half = self._ancho_barra_dist() / 2.0
+            if is_vertical:
+                x1 = self.start_x - half
+                x2 = self.start_x + half
+                y1 = self.start_y
+                y2 = current_y
+            else:
+                x1 = self.start_x
+                x2 = current_x
+                y1 = self.start_y - half
+                y2 = self.start_y + half
+            self.preview_id = draw_world_rectangle(
+                self.app.canvas,
+                x1, y1, x2, y2, outline="blue", width=2, dash=(5, 5), fill=""
+            )
+            self._barra_dist_vertical = is_vertical
         else:  # rectangle, square
             self.preview_id = draw_world_rectangle(
                 self.app.canvas,
@@ -197,6 +226,24 @@ class ShapeDrawingState:
             if width < 10:
                 self.cancel()
                 return None
+        elif self.shape_type == "barra_dist":
+            is_vertical = getattr(self, '_barra_dist_vertical', False)
+            ancho = self._ancho_barra_dist()
+            if is_vertical:
+                # Barra vertical: ancho visible = 'ancho' de la barra, largo = arrastre
+                width = ancho
+                height = abs(end_y - self.start_y)
+                center_x = self.start_x
+                center_y = (self.start_y + end_y) / 2
+            else:
+                # Barra horizontal: largo = arrastre, alto visible = 'ancho' de la barra
+                width = abs(end_x - self.start_x)
+                height = ancho
+                center_x = (self.start_x + end_x) / 2
+                center_y = self.start_y
+            if width < 10 and height < 10:
+                self.cancel()
+                return None
         elif width < 10 or height < 10:
             self.cancel()
             return None
@@ -253,6 +300,12 @@ class ShapeDrawingState:
                 'outline_width': (self.app.current_line_width.get() if hasattr(self.app, 'current_line_width') else 2)
             }
 
+            # Barra de distribución: colores propios (cobre), no los del panel
+            if self.shape_type == "barra_dist":
+                shape_data.pop('fill', None)
+                shape_data.pop('outline', None)
+                shape_data.pop('outline_width', None)
+
             # Para canaleta, agregar información de orientación
             if self.shape_type == "canaleta":
                 is_vertical = getattr(self, '_canaleta_vertical', False)
@@ -260,6 +313,11 @@ class ShapeDrawingState:
                 # Sección comercial por defecto (modificable luego con Ctrl+clic derecho)
                 ancho, alto = self._seccion_canaleta_default()
                 shape_data['seccion'] = f"{ancho:g}x{alto:g}"
+            if self.shape_type == "barra_dist":
+                is_vertical = getattr(self, '_barra_dist_vertical', False)
+                shape_data['horizontal'] = not is_vertical
+                shape_data['barra_tipo'] = getattr(self, '_barra_dist_tipo', '172A')
+                shape_data['barra_ancho'] = self._ancho_barra_dist()
 
             if hasattr(self.app, 'shape_manager'):
                 if hasattr(self.app.shape_manager, 'create_shape_from_data'):
@@ -267,8 +325,16 @@ class ShapeDrawingState:
                     # Asegurar que la forma final utilice outline color/grosor en el canvas
                     if created and hasattr(created, 'canvas_id') and created.canvas_id and hasattr(self.app, 'canvas'):
                         try:
-                            fill_final = '#D0D0D0' if shape_data['type'] == 'canaleta' else ''
-                            self.app.canvas.itemconfig(created.canvas_id, outline=shape_data['outline'], width=shape_data['outline_width'], fill=fill_final)
+                            if shape_data['type'] == 'barra_dist':
+                                # Respetar colores de cobre definidos por la clase
+                                fill_final = getattr(created, 'fill', '#D8A56B')
+                                outline_final = getattr(created, 'outline', '#CD7F32')
+                                width_final = getattr(created, 'outline_width', 1.5)
+                            else:
+                                fill_final = '#D0D0D0' if shape_data['type'] == 'canaleta' else ''
+                                outline_final = shape_data['outline']
+                                width_final = shape_data['outline_width']
+                            self.app.canvas.itemconfig(created.canvas_id, outline=outline_final, width=width_final, fill=fill_final)
                         except Exception:
                             pass
                     return created
@@ -655,6 +721,14 @@ class EventHandler:
             # USAR FUNCIÓN CENTRALIZADA: Calcular coordenadas compensando pan
             x, y = event_to_canvas_coords(event, self.app.canvas)
             self.app.place_text_component(x, y)
+            # Inicializar drag_data con la posición del clic actual para que, si el
+            # usuario arrastra el texto recién colocado sin soltar el botón, el
+            # primer movimiento use un delta correcto y no salte al extremo.
+            try:
+                self.app.drag_data["x"] = event.x
+                self.app.drag_data["y"] = event.y
+            except Exception:
+                pass
             return
         # USAR FUNCIÓN CENTRALIZADA: Calcular coordenadas compensando pan
         x_comp, y_comp = event_to_canvas_coords(event, self.app.canvas)
@@ -773,7 +847,17 @@ class EventHandler:
                     if bt_on_cabinet:
                         self._on_bt_click(event, bt_on_cabinet)
                         return
-                    return  # La estructura del gabinete es completamente inerte.
+                    # Fondo del gabinete/tapa: iniciar selección por área (drag)
+                    # para permitir seleccionar múltiples dispositivos desde dentro
+                    self._clear_selection()
+                    if hasattr(self.app, 'start_selection_box'):
+                        self.app.start_selection_box(event.x, event.y)
+                    try:
+                        self.app.drag_data["x"] = event.x
+                        self.app.drag_data["y"] = event.y
+                    except Exception:
+                        pass
+                    return
                 if not _is_cabinet_image and not _is_cabinet_background:
                     # GABINETE/TAPA 2D: los dispositivos de estas hojas son shapes
                     # (metadata 'component' / 'door_component' / 'relay_socket'), no
@@ -818,6 +902,8 @@ class EventHandler:
 
         # Buscar el punto de conexión más cercano en TODOS los componentes
         for component in self.app.components:
+            if not hasattr(component, 'get_connection_points_global'):
+                continue
             global_points = component.get_connection_points_global()
             for i, (point_x, point_y, point_info) in enumerate(global_points):
                 # Ahora x,y y point_x,point_y están ambos en coordenadas del mundo
@@ -1165,6 +1251,11 @@ class EventHandler:
         if ctrl_pressed and self._abrir_menu_seccion_canaleta(event):
             return "break"
 
+        # Clic derecho (o Ctrl + clic derecho) sobre una BARRA DE DISTRIBUCIÓN
+        # en la Hoja 2D: elegir tipo/capacidad (172A/206A/263A)
+        if self._abrir_menu_barra_dist(event):
+            return "break"
+
         if hasattr(self.app, 'project'):
             sheet = self.app.project.get_active_sheet()
             if sheet and (not getattr(sheet, 'editable', True) or sheet.name in AppConstants.NON_EDITABLE_SHEETS):
@@ -1393,6 +1484,152 @@ class EventHandler:
                 menu.grab_release()
             except Exception:
                 pass
+
+    def _barra_dist_en_posicion(self, x_comp: float, y_comp: float):
+        """Devuelve la Barra de Distribución bajo el punto (coordenadas de mundo), o None."""
+        for shape in reversed(self.app.shape_manager.shapes):
+            if getattr(shape, 'shape_type', '') == 'barra_dist' and shape.contains_point(x_comp, y_comp):
+                return shape
+        sheet = self.app.project.get_active_sheet()
+        for shape in reversed(getattr(sheet, 'live_shape_objects', []) or []):
+            if getattr(shape, 'shape_type', '') == 'barra_dist' and shape.contains_point(x_comp, y_comp):
+                return shape
+        return None
+
+    def _abrir_menu_barra_dist(self, event) -> bool:
+        """Abre el menú de tipos de barra de distribución si hay una bajo el cursor en la Hoja 2D."""
+        if not self._es_hoja_cabinet_2d():
+            return False
+        x_comp, y_comp = event_to_canvas_coords(event, self.app.canvas)
+        barra = self._barra_dist_en_posicion(x_comp, y_comp)
+        if barra is None:
+            return False
+
+        # Seleccionar la barra para que el cambio se vea resaltado
+        editor = getattr(self.app.shape_manager, 'editor', None)
+        if editor:
+            editor.selected_shape = barra
+        if self.app.shape_manager:
+            self.app.shape_manager.selected_shape = barra
+        barra.selected = True
+
+        self.show_barra_dist_menu(event, barra)
+        return True
+
+    def show_barra_dist_menu(self, event, barra):
+        """Menú contextual con el catálogo de tipos/capacidades de barra de distribución."""
+        import tkinter as tk
+        from models.shape import get_tipos_barra_dist, get_ancho_barra_dist
+
+        tipos = get_tipos_barra_dist()
+        if not tipos:
+            return
+
+        meta = getattr(barra, 'metadata', {}) or {}
+        actual = getattr(barra, 'tipo', None) or meta.get('barra_tipo', '172A')
+
+        menu = tk.Menu(self.app.root, tearoff=0)
+        menu.add_command(label="⚡ Tipo de barra de distribución (cobre)", state="disabled")
+        menu.add_separator()
+
+        for tipo in tipos:
+            ancho = get_ancho_barra_dist(tipo)
+            etiqueta = f"{tipo}  ({ancho:g} mm)"
+            if tipo == actual:
+                etiqueta = f"●  {etiqueta}"
+            menu.add_command(
+                label=etiqueta,
+                command=lambda t=tipo: self._aplicar_tipo_barra_dist(barra, t)
+            )
+
+        largo = getattr(barra, 'largo', None)
+        if largo is None:
+            horizontal = getattr(barra, 'horizontal', meta.get('horizontal', True))
+            largo = getattr(barra, 'width' if horizontal else 'height', 0)
+
+        menu.add_separator()
+        menu.add_command(
+            label=f"Largo actual: {largo:.0f} mm",
+            state="disabled"
+        )
+        try:
+            menu.post(event.x_root, event.y_root)
+        finally:
+            try:
+                menu.grab_release()
+            except Exception:
+                pass
+
+    def _aplicar_tipo_barra_dist(self, barra, tipo):
+        """Cambia el tipo/capacidad de la barra de distribución y refresca 2D + informes."""
+        from models.shape import get_ancho_barra_dist
+
+        if hasattr(barra, 'set_tipo'):
+            if not barra.set_tipo(tipo):
+                return
+            ancho = barra.ancho_fijo
+        else:
+            # Compatibilidad con barras antiguas (Rect + metadata)
+            meta = barra.metadata if isinstance(getattr(barra, 'metadata', None), dict) else {}
+            if meta.get('barra_tipo') == tipo:
+                return
+            ancho = get_ancho_barra_dist(tipo)
+            meta['barra_tipo'] = tipo
+            meta['barra_ancho'] = ancho
+            barra.metadata = meta
+            if getattr(barra, 'horizontal', meta.get('horizontal', True)):
+                barra.height = ancho
+            else:
+                barra.width = ancho
+
+        # Reflejar el nuevo ancho en el 2D
+        editor = getattr(self.app.shape_manager, 'editor', None)
+        if editor:
+            try:
+                editor._redraw_shape(barra)
+            except Exception:
+                barra.draw(self.app.canvas)
+        else:
+            barra.draw(self.app.canvas)
+
+        if hasattr(self.app, 'set_status'):
+            self.app.set_status(
+                f"⚡ Barra de distribución {tipo} "
+                f"(ancho {ancho:g} mm)",
+                "blue"
+            )
+
+        # Reflejar el nuevo ancho en la BOM y en el resumen de gabinete
+        try:
+            sheet = self.app.project.get_active_sheet()
+            if sheet is not None and hasattr(sheet, 'live_shape_objects'):
+                sheet.live_shape_objects = self.app.shape_manager.shapes[:]
+        except Exception:
+            pass
+
+        # Regenerar los reportes que ya existen y luego volver a la Hoja 2D
+        nombres = {s.name for s in self.app.project.sheets}
+        index_actual = self.app.project.active_sheet_index
+        if "Lista de Materiales" in nombres and hasattr(self.app, 'insert_bom_sheet'):
+            try:
+                self.app.insert_bom_sheet()
+            except Exception:
+                pass
+        if "Resumen de Gabinete" in nombres and hasattr(self.app, 'insert_cabinet_summary_sheet'):
+            try:
+                self.app.insert_cabinet_summary_sheet()
+            except Exception:
+                pass
+        try:
+            if self.app.project.active_sheet_index != index_actual:
+                self.app.switch_to_sheet(index_actual)
+        except Exception:
+            pass
+
+        try:
+            self.app.save_undo_checkpoint()
+        except Exception:
+            pass
 
     def _aplicar_seccion_canaleta(self, canaleta, dims):
         """Cambia la sección comercial de la canaleta y refresca 2D + informes."""
@@ -2280,6 +2517,10 @@ class EventHandler:
             self.app.highlighted_component = None
 
         for comp in self.app.components:
+            # Ignorar cualquier elemento que no sea un componente eléctrico real
+            # (p. ej. un texto extraviado en la lista) para no romper el ratón.
+            if not hasattr(comp, 'size') or not hasattr(comp, 'get_connection_points_global'):
+                continue
             # Highlight: componente bajo el cursor
             is_inside = comp.contains_point(x_comp, y_comp)
             if is_inside and not self.app.highlighted_component:

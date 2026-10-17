@@ -6829,6 +6829,7 @@ class PlanoElectrico:
                 ("Escape", "Deseleccionar"),
                 ("Alt+Clck Der hold", "Mover componente horizontalmente (fija vertical)"),
                 ("Alt+Clck Izq hold", "Mover componente verticalmente (fija horizontal)"),
+                ("F4", "Mover Lineas de conexion)"),
             ]),
             ("ALINEACIÓN Y DISTRIBUCIÓN", [
                 ("Ctrl+H", "Centrar Verticalmente"),

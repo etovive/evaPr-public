@@ -371,6 +371,10 @@ class BOMGenerator:
                 # es un breaker, contactor o relé térmico y aún no los tiene.
                 description = self._enrich_description_with_poles(data, description)
 
+            # Normalizar los nombres comerciales que se muestran en la BOM,
+            # incluso si el usuario conservó una descripción anterior.
+            description = self._normalize_bom_description(data, description)
+
             # ENRIQUECER DESCRIPCION DE CONTACTOR CON AUXILIARES
             # Si este elemento es un contactor Y tiene auxiliares registrados,
             # la descripcion pasa a ser "Contactor + X NO + Y NC"
@@ -544,6 +548,32 @@ class BOMGenerator:
             poles = '1p'
         return f"{description} {poles}"
 
+    def _normalize_bom_description(self, data, description):
+        """Aplica la nomenclatura comercial estándar de la lista BOM."""
+        normalized = str(description or '').strip()
+        svg_file = str(data.get('svg_file') or '').lower()
+        label_data = data.get('label_data') or {}
+
+        # Compatibilidad con descripciones guardadas antes de esta nomenclatura.
+        if normalized.casefold() == 'piloto':
+            return 'Luz Piloto'
+        if normalized.casefold() == 'boya':
+            return 'BOYA de Nivel'
+
+        # Los selectores 3p/4p con LOTTO activo representan el interruptor de
+        # leva bloqueable. El número de polos se toma del SVG/etiqueta para que
+        # 3p y 4p no se agrupen como si fueran el mismo material.
+        is_loto_switch = (
+            bool(label_data.get('lotto')) and
+            ('selector-3p-no' in svg_file or 'selector-4p-no' in svg_file)
+        )
+        is_legacy_loto_description = normalized.casefold() == 'interruptor loto'
+        if is_loto_switch or is_legacy_loto_description:
+            poles = self._extract_poles(data) or '1p'
+            return f'Interruptor de Leva (Loto) {poles}'
+
+        return normalized
+
     def _deduce_description(self, data):
         """Deduce una descripción legible basada en categoría o archivo"""
         category = str(data.get('category') or '').lower()
@@ -587,7 +617,12 @@ class BOMGenerator:
             poles = self._extract_poles(data) or '1p'
             return f"Disyuntor {poles}"
         if 'fuse' in svg_file: return "Fusible"
-        if 'pilot' in svg_file or 'piloto' in svg_file: return "Piloto"
+        if 'pilot' in svg_file or 'piloto' in svg_file: return "Luz Piloto"
+        if 'roller-switch' in svg_file: return "BOYA de Nivel"
+        if (label_data := data.get('label_data') or {}).get('lotto') and (
+                'selector-3p-no' in svg_file or 'selector-4p-no' in svg_file):
+            poles = self._extract_poles(data) or '1p'
+            return f"Interruptor de Leva (Loto) {poles}"
         if 'button' in svg_file or 'boton' in svg_file: return "Pulsador"
         if 'plc' in category: return "PLC"
         if 'driver' in category or 'variador' in category: return "Variador/Driver"

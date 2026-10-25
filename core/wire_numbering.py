@@ -24,6 +24,16 @@ class WireNumberingManager:
         'sst-c', 'vdf-c', 'power_supply_dc', 'power_supply_ac',
     )
 
+    # Hojas secundarias de maniobra/control: en ellas la Numeracion por Potencial
+    # numera NODOS electricos (ver _assign_labels_by_potential_nodes). Es la
+    # misma lista de contextos que core/protection_suggestions.py.
+    _SECONDARY_SHEET_KEYWORDS = ("CONTROL", "LUCES", "ALARMAS", "MANIOBRA", "PLC")
+
+    # Componentes que son CONTACTOS (conmutadores). Dentro de este grupo los NC
+    # conducen (dibujados cerrados) y los NO/NCNO separan nodos.
+    _CONTACT_KEYWORDS = ('switch', 'contact', 'selector', 'boton', 'mushroom',
+                         'pulsador', 'button')
+
     def __init__(self, app):
         self.app = app
         self.net_map = {}
@@ -54,14 +64,32 @@ class WireNumberingManager:
         elif numbering_type == "Numeración Secuencial por Regleta de Bornes":
             self._assign_labels_sequential_terminal(sheet_idx)
         elif numbering_type == "Numeración por Potencial":
-            # Un disyuntor es el arranque de un circuito nuevo: su entrada y su
-            # salida deben ser redes distintas para que la numeracion cambie al
-            # atravesarlo (L1 = 1, salida del breaker de control = 11).
-            self._group_equipotentials(split_breakers=True)
-            self._assign_labels_by_potential(sheet_idx)
+            if self._is_secondary_sheet():
+                # Hojas de control/maniobra: se numeran NODOS electricos.
+                # Cada nodo (conductores unidos por cable, bornes, empalmes,
+                # contactos NC y protecciones cerradas) recibe un numero
+                # propio; un contacto abierto (NO/NCNO) o una carga separan
+                # nodos y cada lado conserva SU numero. Sin el "11" global
+                # de _split_by_protection.
+                self._group_equipotentials(node_mode=True)
+                self._assign_labels_by_potential_nodes(sheet_idx)
+            else:
+                # Hojas de potencia: un disyuntor es el arranque de un
+                # circuito nuevo (L1 = 1, salida del breaker = 11).
+                self._group_equipotentials(split_breakers=True)
+                self._assign_labels_by_potential(sheet_idx)
         else:
             # Estilo por defecto: Numeración por Bloques de Motor (sin cambios)
             self._assign_labels(sheet_idx)
+
+    def _is_secondary_sheet(self):
+        """True si la hoja activa es de control/maniobra (numeracion por nodos)."""
+        try:
+            sheet = self.app.project.get_active_sheet()
+            name = str(getattr(sheet, 'name', '') or '').upper()
+        except Exception:
+            return False
+        return any(k in name for k in self._SECONDARY_SHEET_KEYWORDS)
 
     def _get_comp_tag(self, comp):
         """Extrae el nombre/tag del componente de forma segura."""
@@ -71,13 +99,19 @@ class WireNumberingManager:
             return str(label_data.get('name', '') or '').upper()
         return str(getattr(label_data, 'name', '') or '').upper()
 
-    def _group_equipotentials(self, split_breakers=False):
+    def _group_equipotentials(self, split_breakers=False, node_mode=False):
         """Agrupa los puntos de conexion en redes electricas (union-find).
 
-        Cuando split_breakers=True (Numeración por Potencial) cada polo
-        de un componente multi-polo (breaker, contactor, borne de 3
-        posiciones...) debe conservar su propia red, porque la barra
-        L1 y la L2 son POTENCIALES DISTINTOS que no deben mezclarse.
+        Cuando split_breakers=True (Numeración por Potencial en hojas de
+        potencia) cada polo de un componente multi-polo (breaker, contactor,
+        borne de 3 posiciones...) debe conservar su propia red, porque la
+        barra L1 y la L2 son POTENCIALES DISTINTOS que no deben mezclarse.
+
+        Cuando node_mode=True (Numeración por Potencial en hojas de control)
+        la unidad es el NODO electrico: los puntos unidos por un conductor
+        continuo (cable, borne, empalme, contacto NC, proteccion cerrada)
+        comparten nodo; los contactos abiertos (NO/NCNO) y las cargas
+        separan nodos y cada lado conserva SU numero.
         """
         parent = {}
         point_phase = {}
@@ -116,10 +150,16 @@ class WireNumberingManager:
             pts = getattr(comp, 'conn_points', [])
             if not pts: continue
 
+            if node_mode and getattr(comp, 'component_type', '') == 'junction':
+                # Puntos de empalme reales (JunctionComponent): su svg_file
+                # viene vacio, se detectan por el tipo. Unen sus puntos.
+                is_junction = True
+
             if is_breaker:
                 # Cada polo de breaker es columna vertical; polos aislados.
-                # Solo unir polos cuando NO se dividen (split_breakers=False).
-                if not split_breakers:
+                # En node_mode la proteccion esta cerrada por esquema: su
+                # entrada y su salida son el MISMO nodo.
+                if node_mode or not split_breakers:
                     half = len(pts) // 2
                     for i in range(half):
                         union((id(comp), i), (id(comp), i + half))
@@ -133,7 +173,7 @@ class WireNumberingManager:
                         continue
                     union(pi, pj)
             elif is_terminal:
-                if split_breakers:
+                if split_breakers or node_mode:
                     # Bornes multi-polo (borner-3.svg): puntos [pos0,pos1,...,sal0,sal1,...].
                     # Unir SOLO dentro de cada posicion/polo.
                     n = len(pts)
@@ -147,11 +187,17 @@ class WireNumberingManager:
                     # Comportamiento original: unir pares consecutivos.
                     for i in range(0, len(pts) - 1, 2):
                         union((id(comp), i), (id(comp), i + 1))
+            elif node_mode and self._is_closed_contact(comp, svg):
+                # Contacto NC (dibujado cerrado): conduce, misma red en su
+                # entrada y su salida. Los NO/NCNO no llegan aqui: separan.
+                half = len(pts) // 2
+                for i in range(half):
+                    union((id(comp), i), (id(comp), i + half))
 
         # conxn.svg y conxn2.svg son los dos extremos del MISMO cable.
-        # Se unen solo cuando split_breakers=True (Numeración por Potencial)
+        # Se unen en Numeración por Potencial (split_breakers o node_mode)
         # para que el cable sea reconocido como una sola red.
-        if split_breakers:
+        if split_breakers or node_mode:
             name_comps = {}
             for comp in self.app.components:
                 if comp is None: continue
@@ -167,6 +213,16 @@ class WireNumberingManager:
                             union((id(comps_list[i]), p1), (id(comps_list[i+1]), p2))
 
         self.net_map = {p: find(p) for p in parent}
+
+    def _is_closed_contact(self, comp, svg):
+        """True si el componente es un contacto NC (dibujado cerrado).
+
+        Los simbolos mixtos NCNO (paro de emergencia, boton NC/NO) se
+        tratan como ABIERTOS: es su estado sin energizar.
+        """
+        if not any(k in svg for k in self._CONTACT_KEYWORDS):
+            return False
+        return 'nc' in svg and 'ncno' not in svg
 
     def _assign_labels(self, sheet_idx):
         # 1. Asignación de Nombres Reservados a la Barra (Prioridad Máxima)
@@ -762,3 +818,50 @@ class WireNumberingManager:
                 self.net_labels[root] = f"{number}1"
 
             number += 1
+
+    # ESTILO: Numeración por Potencial en hojas de control/maniobra
+    def _assign_labels_by_potential_nodes(self, sheet_idx):
+        """Numera NODOS electricos, un numero por nodo y bloque por potencial.
+
+        El nodo es la unidad electrica: todos los puntos unidos por un
+        conductor continuo (cable, borne, empalme, contacto NC, proteccion
+        cerrada) comparten el MISMO numero, incluidas sus derivaciones.
+        Un contacto abierto (NO/NCNO) o una carga (bobina, lampara...)
+        separan nodos: cada lado conserva el numero de SU nodo; no se
+        asume que ambos lados tengan el mismo potencial.
+
+        El numero tiene 3 digitos: el primero es la FAMILIA de potencial
+        (bloque) y los dos ultimos el indice del nodo dentro de esa
+        familia, ordenados de arriba abajo y de izquierda a derecha:
+
+            L1 -> 101, 102, 103...     N -> 501, 502...
+            L2 -> 201, 202...          sin potencial -> al final
+
+        La familia de potencial si se hereda a traves de un contacto
+        abierto (el circuito tras un paro de emergencia sigue siendo de
+        la familia L1), pero el NODO no: de ahi que cada lado del
+        contacto tenga su propio numero. La serie no vuelve a cambiar
+        hasta que el conductor salga de la hoja.
+
+        PE no se numera: IEC 60445:2021 §7.3.3 fija su designacion "PE".
+        """
+        net_potential, supply_roots, feed_roots = self._resolve_net_potentials()
+
+        # 1) Agrupar los nodos por familia de potencial, en orden geometrico
+        groups = {}
+        for root in sorted(set(self.net_map.values()), key=self._net_order_key):
+            groups.setdefault(net_potential.get(root, ''), []).append(root)
+
+        # 1b) Potenciales con designacion fija por norma (PE)
+        for pot, designation in self._DESIGNATED_POTENTIALS.items():
+            for root in groups.pop(pot, ()):
+                self.net_labels[root] = designation
+
+        # 2) Un bloque de 3 digitos por familia, en orden canonico de fase
+        ordered_pots = sorted(groups, key=lambda p: (self._potential_rank(p), p))
+
+        family = 1
+        for pot in ordered_pots:
+            for i, root in enumerate(groups[pot], 1):
+                self.net_labels[root] = f"{family}{i:02d}"
+            family += 1
